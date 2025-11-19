@@ -1,5 +1,5 @@
 """
-Sección de Formación Empresa Fin
+Sección de Fin
 """
 import streamlit as st
 import io
@@ -465,8 +465,8 @@ def llenar_excel_resumen(excel_file, datos_excel, datos_documentos, datos_ctrl=N
         return None
 
 
-def render_formacion_fin():
-    """Renderiza la sección de Formación Empresa Fin"""
+def render_fin():
+    """Renderiza la sección de Fin"""
     st.markdown("### Fase 1: Cargar Archivos Excel")
     st.markdown('<div class="custom-card"><p>Sube los archivos Excel necesarios para completar el proceso de documentación.</p></div>', unsafe_allow_html=True)
 

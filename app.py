@@ -11,14 +11,13 @@ import pytesseract
 # Añadir el directorio actual al path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-# Importar configuración
-try:
-    from config.settings import PAGE_CONFIG, TESSERACT_PATHS, SECCIONES
-except ImportError as e:
-    st.error(f"Error al importar configuración: {e}")
-    st.stop()
+# ⭐ CONFIGURAR PÁGINA PRIMERO - ANTES DE CUALQUIER IMPORT DE SECCIONES
+from config.settings import PAGE_CONFIG, TESSERACT_PATHS, SECCIONES
 
-# Importar estilos
+# Configurar página INMEDIATAMENTE después de importar PAGE_CONFIG
+st.set_page_config(**PAGE_CONFIG)
+
+# Ahora sí, importar el resto
 try:
     from styles.custom_styles import get_custom_styles
 except ImportError as e:
@@ -36,8 +35,8 @@ except ImportError as e:
 # Importar secciones
 try:
     from sections.evaluacion import render_evaluacion
-    from sections.formacion_fin import render_formacion_fin
-    from sections.formacion_inicio import render_formacion_inicio
+    from sections.fin import render_fin
+    from sections.inicio import render_inicio
     from sections.captacion import render_captacion
     from sections.cierre_mes import render_cierre_mes
 except ImportError as e:
@@ -52,9 +51,6 @@ if platform.system() == 'Windows':
             pytesseract.pytesseract.tesseract_cmd = ruta
             break
 
-
-# Configurar página
-st.set_page_config(**PAGE_CONFIG)
 
 # Aplicar estilos
 st.markdown(get_custom_styles(), unsafe_allow_html=True)
@@ -84,11 +80,11 @@ st.markdown(f"""
 if seccion_actual == "Captación":
     render_captacion()
 
-elif seccion_actual == "Formación Empresa Inicio":
-    render_formacion_inicio()
+elif seccion_actual == "Inicio":
+    render_inicio()
 
-elif seccion_actual == "Formación Empresa Fin":
-    render_formacion_fin()
+elif seccion_actual == "Fin":
+    render_fin()
 
 elif seccion_actual == "Evaluación":
     render_evaluacion()
