@@ -5,8 +5,8 @@ Sistema automatizado para la gestión de documentación de convocatorias de form
 ## Estructura del Proyecto
 ```
 Doc_Convocatoria/
-├── app.py                 # Aplicación principal
-├── requirements.txt       # Dependencias
+├── app.py                # Aplicación principal
+├── requirements.txt      # Dependencias
 ├── README.md             # Documentación
 ├── assets/               # Recursos (logos, imágenes)
 ├── config/               # Configuración general
