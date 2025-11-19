@@ -1,35 +1,65 @@
 """
-Módulo de Evaluación - Desempleados
-Generación automática de actas SEPE
+Interfaz de Evaluación - Desempleados
+CON PLANTILLA INTEGRADA POR DEFECTO
 """
 import streamlit as st
 import pandas as pd
 from io import BytesIO
 import zipfile
+import os
 
-# Importaciones con manejo de errores
+# Importar los procesadores
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
 try:
-    from .excel_processor import ExcelProcessorReal
-    from .word_generator import WordGeneratorSEPE
-except ImportError:
+    from excel_processor import ExcelProcessorReal
+    from word_generator import WordGeneratorSEPE
+except:
+    st.error("❌ Error importando módulos")
+
+
+# Ruta de la plantilla integrada
+PLANTILLA_POR_DEFECTO = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), 
+    'plantilla_oficial.docx'
+)
+
+
+def cargar_plantilla_por_defecto():
+    """Carga la plantilla integrada en la aplicación"""
     try:
-        from excel_processor import ExcelProcessorReal
-        from word_generator import WordGeneratorSEPE
-    except ImportError:
-        import sys
-        import os
-        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-        from excel_processor import ExcelProcessorReal
-        from word_generator import WordGeneratorSEPE
+        # Intentar varias ubicaciones posibles
+        ubicaciones = [
+            PLANTILLA_POR_DEFECTO,  # Primera opción: junto al archivo
+            os.path.join(os.getcwd(), 'sections', 'evaluacion', 'plantilla_oficial.docx'),  # Desde raíz
+            os.path.join(os.path.dirname(__file__), '..', '..', 'plantilla_oficial.docx'),  # Relativa
+        ]
+        
+        for ubicacion in ubicaciones:
+            if os.path.exists(ubicacion):
+                with open(ubicacion, 'rb') as f:
+                    contenido = f.read()
+                    if len(contenido) > 1000:  # Verificar que no esté vacío
+                        print(f"✓ Plantilla cargada desde: {ubicacion}")
+                        return contenido
+        
+        print("⚠ No se encontró plantilla en ninguna ubicación")
+        return None
+        
+    except Exception as e:
+        print(f"⚠ Error cargando plantilla: {e}")
+        return None
 
 
 def render_tab_desempleados():
-    """Función principal del módulo de desempleados"""
-    st.markdown("#### 📋 Generación Automática de Actas SEPE")
-    st.info("Sistema automatizado de generación de actas en formato Word")
+    """Render tab para desempleados"""
     
-    # Sección de carga de archivos
-    st.markdown("### 📁 Cargar Archivos (Los 3 son obligatorios)")
+    st.markdown("## 📋 Generador de Actas - Desempleados")
+    st.markdown("Genera informes individualizados para cada alumno")
+    
+    # Subida de archivos
+    st.markdown("### 📁 Archivos")
     
     col1, col2, col3 = st.columns(3)
     
@@ -37,7 +67,7 @@ def render_tab_desempleados():
     with col1:
         st.markdown("**📅 Cronograma ⚠️**")
         cronograma_file = st.file_uploader(
-            "Archivo Excel*",
+            "Excel cronograma*",
             key="cronograma",
             type=['xlsx', 'xls']
         )
@@ -48,9 +78,9 @@ def render_tab_desempleados():
     
     # Asistencias
     with col2:
-        st.markdown("**📊 Asistencias ⚠️**")
+        st.markdown("**👥 Asistencias ⚠️**")
         asistencias_file = st.file_uploader(
-            "Archivo Excel*",
+            "Excel control asistencias*",
             key="asistencias",
             type=['xlsx', 'xls']
         )
@@ -59,49 +89,48 @@ def render_tab_desempleados():
         else:
             st.warning("⚠️ Requerido")
     
-    # Plantilla
+    # Plantilla (OPCIONAL)
     with col3:
-        st.markdown("**📄 Plantilla ⚠️**")
+        st.markdown("**📄 Plantilla (Opcional)**")
         plantilla_file = st.file_uploader(
-            "Archivo Word o XML*",
+            "Archivo Word (opcional)",
             key="plantilla",
-            type=['docx', 'doc', 'xml']
+            type=['docx', 'doc'],
+            help="Si no subes ninguna, se usará la plantilla oficial SEPE predeterminada"
         )
         if plantilla_file:
-            tipo = "XML" if plantilla_file.name.endswith('.xml') else "Word"
-            st.success(f"✅ {tipo}")
+            st.success("✅ Personalizada")
         else:
-            st.warning("⚠️ Requerido")
+            st.info("📋 Por defecto")
     
-    # Verificar si todos están cargados
-    todos_cargados = cronograma_file and asistencias_file and plantilla_file
-    
-    if not todos_cargados:
-        st.info("📌 **Sube los 3 archivos para continuar**")
+    # Ayuda
+    with st.expander("ℹ️ Información", expanded=False):
+        st.markdown("""
+        **Archivos necesarios:**
         
-        with st.expander("ℹ️ Información sobre los archivos"):
-            st.markdown("""
-            **Archivos necesarios:**
-            
-            1. **Cronograma** - Excel con fechas y módulos
-            2. **Asistencias** - Excel de control (formato: `XXXX_CTRL_Tareas_AREA.xlsx`)
-            3. **Plantilla** - Word (.docx) o XML (.xml) con marcadores
-            
-            **💡 RECOMENDADO: Usar XML para evitar bloqueos**
-            
-            Si tu documento Word está bloqueado por ser oficial:
-            1. Extrae el XML del Word (ver guía)
-            2. Sube el .xml en lugar del .docx
-            3. ¡Sin problemas de bloqueos!
-            
-            **Datos del centro (se rellenan automáticamente):**
-            - Centro: INTERPROS NEXT GENERATION SLU
-            - Código: ADGG0408 / 26615
-            - Dirección: C/ DR. SEVERO OCHOA, 21, BJ
-            - Localidad: AVILÉS
-            - C.P.: 33400
-            - Provincia: ASTURIAS
-            """)
+        1. **Cronograma** - Excel con fechas y módulos ⚠️ Requerido
+        2. **Asistencias** - Excel de control (formato: `XXXX_CTRL_Tareas_AREA.xlsx`) ⚠️ Requerido
+        3. **Plantilla** - Word con formato oficial (opcional)
+        
+        **💡 Plantilla predeterminada:**
+        
+        Si NO subes una plantilla, se usará la plantilla oficial SEPE integrada con:
+        - ✅ Logos del Principado y Ministerio
+        - ✅ Formato oficial completo
+        - ✅ Campos predefinidos
+        
+        **Datos del centro (se rellenan automáticamente):**
+        - Centro: INTERPROS NEXT GENERATION SLU
+        - Código: ADGG0408 / 26615
+        - Dirección: C/ DR. SEVERO OCHOA, 21, BJ
+        - Localidad: AVILÉS
+        - C.P.: 33400
+        - Provincia: ASTURIAS
+        """)
+    
+    # Validar solo cronograma y asistencias
+    if not cronograma_file or not asistencias_file:
+        st.info("👆 Sube al menos el cronograma y asistencias para continuar")
         return
     
     # Procesar archivos
@@ -149,13 +178,24 @@ def render_tab_desempleados():
                 alumnos = datos['alumnos']
                 total = len(alumnos)
                 
+                # Obtener plantilla (personalizada o por defecto)
+                if plantilla_file:
+                    plantilla_file.seek(0)
+                    plantilla_bytes = plantilla_file.read()
+                    st.info("📄 Usando plantilla personalizada")
+                else:
+                    plantilla_bytes = cargar_plantilla_por_defecto()
+                    if plantilla_bytes:
+                        st.info("📋 Usando plantilla oficial SEPE predeterminada")
+                    else:
+                        st.error("❌ No se pudo cargar la plantilla predeterminada")
+                        st.warning("⚠️ Sube una plantilla manualmente")
+                        return
+                
                 with st.spinner(f'Generando {total} actas...'):
                     zip_buffer = BytesIO()
                     
                     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-                        plantilla_file.seek(0)
-                        plantilla_bytes = plantilla_file.read()
-                        
                         progress = st.progress(0)
                         status = st.empty()
                         
@@ -171,10 +211,7 @@ def render_tab_desempleados():
                                 }
                             }
                             
-                            # Detectar si es XML o DOCX
-                            es_xml = plantilla_file.name.endswith('.xml')
-                            
-                            gen = WordGeneratorSEPE(plantilla_bytes, es_xml=es_xml)
+                            gen = WordGeneratorSEPE(plantilla_bytes, es_xml=False)
                             doc = gen.generar_informe_individual(datos_alumno)
                             
                             nombre = alumno['nombre'].replace(' ', '_').replace(',', '')[:50]
@@ -197,73 +234,68 @@ def render_tab_desempleados():
         # Descarga
         if 'zip_actas' in st.session_state:
             st.markdown("---")
+            st.markdown("### 💾 Descargar")
+            
             st.download_button(
-                label="📥 Descargar ZIP con todas las actas",
+                label="⬇️ Descargar ZIP con todas las actas",
                 data=st.session_state['zip_actas'],
                 file_name=st.session_state['nombre_zip'],
                 mime="application/zip",
+                type="primary",
                 use_container_width=True
             )
         
         # Vista individual
         st.markdown("---")
-        st.markdown("### 🔍 Vista Previa Individual")
+        st.markdown("### 👤 Vista Individual")
         
-        col_a, col_b = st.columns([3, 1])
+        alumno_seleccionado = st.selectbox(
+            "Selecciona un alumno",
+            options=range(len(datos['alumnos'])),
+            format_func=lambda x: f"{x+1}. {datos['alumnos'][x]['nombre']} - {datos['alumnos'][x]['dni']}"
+        )
         
-        with col_a:
-            nombres = [a['nombre'] for a in datos['alumnos']]
-            alumno_sel = st.selectbox("Seleccionar alumno:", nombres)
-        
-        with col_b:
-            if st.button("Generar"):
-                try:
-                    alumno = [a for a in datos['alumnos'] if a['nombre'] == alumno_sel][0]
-                    
-                    datos_ind = {
-                        'alumno': alumno,
-                        'curso': {
-                            'nombre': datos['curso_nombre'],
-                            'codigo': datos['curso_codigo']
-                        }
+        if st.button("🔍 Generar vista previa", use_container_width=True):
+            try:
+                alumno = datos['alumnos'][alumno_seleccionado]
+                
+                datos_ind = {
+                    'alumno': alumno,
+                    'curso': {
+                        'nombre': datos['curso_nombre'],
+                        'codigo': datos['curso_codigo']
                     }
-                    
+                }
+                
+                # Usar plantilla (personalizada o por defecto)
+                if plantilla_file:
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
-                    es_xml = plantilla_file.name.endswith('.xml')
-                    
-                    gen = WordGeneratorSEPE(plantilla_bytes, es_xml=es_xml)
+                else:
+                    plantilla_bytes = cargar_plantilla_por_defecto()
+                
+                if plantilla_bytes:
+                    gen = WordGeneratorSEPE(plantilla_bytes, es_xml=False)
                     doc = gen.generar_informe_individual(datos_ind)
                     
-                    st.session_state['acta_ind'] = doc
-                    st.session_state['nombre_ind'] = f"{alumno_sel.replace(' ', '_')[:40]}.docx"
-                    st.success("✅ Generado")
+                    st.download_button(
+                        label="⬇️ Descargar informe individual",
+                        data=doc,
+                        file_name=f"{alumno['nombre'].replace(' ', '_')}.docx",
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True
+                    )
+                else:
+                    st.error("❌ No hay plantilla disponible")
                     
-                except Exception as e:
-                    st.error(f"❌ {str(e)}")
-        
-        if 'acta_ind' in st.session_state:
-            st.download_button(
-                label="⬇️ Descargar acta individual",
-                data=st.session_state['acta_ind'],
-                file_name=st.session_state['nombre_ind'],
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document"
-            )
-        
+            except Exception as e:
+                st.error(f"❌ Error: {str(e)}")
+                st.exception(e)
+    
     except Exception as e:
-        st.error(f"❌ Error al procesar: {str(e)}")
+        st.error(f"❌ Error procesando archivos: {str(e)}")
         st.exception(e)
-        
-        with st.expander("💡 Ayuda"):
-            st.markdown("""
-            **Verifica:**
-            - Archivo de asistencias correcto
-            - Plantilla con marcadores: `{{NOMBRE_ALUMNO}}`, `{{DNI}}`, etc.
-            - Archivos no corruptos
-            """)
 
 
-# Verificar que la función existe
 if __name__ == "__main__":
-    print("✅ Módulo desempleados cargado correctamente")
-    print("✅ Función render_tab_desempleados disponible")
+    render_tab_desempleados()
