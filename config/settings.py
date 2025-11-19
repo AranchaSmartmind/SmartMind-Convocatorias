@@ -13,8 +13,8 @@ PAGE_CONFIG = {
 # Secciones de la aplicación
 SECCIONES = {
     "Captación": "Carga los documentos de captación de alumnos.",
-    "Formación Empresa Inicio": "Documentación de inicio de formación en empresa.",
-    "Formación Empresa Fin": "Documentación de finalización de formación en empresa.",
+    "Inicio": "Documentación de inicio de formación en empresa.",
+    "Fin": "Documentación de finalización de formación en empresa.",
     "Evaluación": "Documentos de evaluación del curso.",
     "Cierre Mes": "Documentación de cierre mensual.",
 }
