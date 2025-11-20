@@ -129,6 +129,125 @@ def generar_acta_transversal_desempleados(plantilla_word, datos_cronograma, dato
 
 
 # ============================================================================
+# FUNCIONES PARA OCUPADOS - ACTAS INDIVIDUALES
+# ============================================================================
+
+def procesar_cronograma_ocupados(archivo_excel):
+    """
+    Procesa el archivo Excel de cronograma para desempleados
+    
+    Args:
+        archivo_excel: Archivo Excel subido por el usuario
+        
+    Returns:
+        dict: Diccionario con los datos extraídos del cronograma
+        
+    TODO: Implementar según la estructura real del Excel
+    """
+    try:
+        df = pd.read_excel(archivo_excel)
+        
+        # Aquí se implementará la extracción de datos según la estructura real
+        # Por ahora retornamos un ejemplo de estructura
+        datos_cronograma = {
+            'fecha_inicio': None,
+            'fecha_fin': None,
+            'horas_totales': 0,
+            'modulos': [],
+            'sesiones': [],
+            'formadores': []
+        }
+        
+        return datos_cronograma
+        
+    except Exception as e:
+        raise Exception(f"Error al procesar cronograma: {str(e)}")
+
+
+def procesar_asistencias_ocupados(archivo_excel):
+    """
+    Procesa el archivo Excel de asistencias para desempleados
+    
+    Args:
+        archivo_excel: Archivo Excel subido por el usuario
+        
+    Returns:
+        dict: Diccionario con los datos de asistencia procesados
+        
+    TODO: Implementar según la estructura real del Excel
+    """
+    try:
+        df = pd.read_excel(archivo_excel)
+        
+        # Aquí se implementará la extracción de datos según la estructura real
+        datos_asistencias = {
+            'alumnos': [],
+            'porcentajes_asistencia': {},
+            'total_sesiones': 0,
+            'asistencias_por_fecha': {}
+        }
+        
+        return datos_asistencias
+        
+    except Exception as e:
+        raise Exception(f"Error al procesar asistencias: {str(e)}")
+
+
+def generar_acta_individual_ocupados(plantilla_word, datos_cronograma, datos_asistencias):
+    """
+    Genera las actas individuales para cada alumno
+    
+    Args:
+        plantilla_word: Documento Word plantilla
+        datos_cronograma: Datos extraídos del cronograma
+        datos_asistencias: Datos extraídos de las asistencias
+        
+    Returns:
+        list: Lista de documentos Word generados (uno por alumno)
+        
+    TODO: Implementar según los campos de la plantilla
+    """
+    try:
+        documentos_generados = []
+        
+        # Por cada alumno, generar un acta individual
+        # TODO: Implementar la lógica de generación
+        
+        return documentos_generados
+        
+    except Exception as e:
+        raise Exception(f"Error al generar actas individuales: {str(e)}")
+
+
+# ============================================================================
+# FUNCIONES PARA OCUPADOS - ACTA CERTIFICACIÓN
+# ============================================================================
+
+def generar_acta_certificacion_ocupados(plantilla_word, datos_cronograma, datos_asistencias):
+    """
+    Genera el acta transversal con información de todo el grupo
+    
+    Args:
+        plantilla_word: Documento Word plantilla
+        datos_cronograma: Datos extraídos del cronograma
+        datos_asistencias: Datos extraídos de las asistencias
+        
+    Returns:
+        Document: Documento Word generado
+        
+    TODO: Implementar según los campos de la plantilla
+    """
+    try:
+        # TODO: Implementar la lógica de generación del acta transversal
+        doc = Document(plantilla_word)
+        
+        return doc
+        
+    except Exception as e:
+        raise Exception(f"Error al generar acta transversal: {str(e)}")
+    
+    
+# ============================================================================
 # FUNCIONES AUXILIARES GENERALES
 # ============================================================================
 
