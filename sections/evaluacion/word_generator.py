@@ -236,7 +236,7 @@ class WordGeneratorSEPE:
         
         xml_modificado = re.sub(patron, rellenar_campo, xml, flags=re.DOTALL)
         
-        print(f"✓ {contador} campos rellenados")
+        print(f" {contador} campos rellenados")
         
         return xml_modificado
     
@@ -263,14 +263,14 @@ class WordGeneratorSEPE:
         
         idx_modulos = xml.find('Módulos')
         if idx_modulos < 0:
-            print("⚠ No se encontró 'Módulos' en el documento")
+            print(" No se encontró 'Módulos' en el documento")
             return xml
         
         # Buscar la siguiente tabla después de "Módulos"
         # Las tablas están marcadas con <w:tbl>
         idx_tabla = xml.find('<w:tbl>', idx_modulos)
         if idx_tabla < 0:
-            print("⚠ No se encontró tabla después de 'Módulos'")
+            print(" No se encontró tabla después de 'Módulos'")
             return xml
         
         # Encontrar el final de la tabla
@@ -286,7 +286,7 @@ class WordGeneratorSEPE:
         filas = re.findall(r'<w:tr[^>]*>(.*?)</w:tr>', tabla_completa, re.DOTALL)
         
         if len(filas) < 2:  # Necesitamos al menos header + 1 fila de datos
-            print("⚠ No se encontraron filas de datos en la tabla")
+            print(" No se encontraron filas de datos en la tabla")
             return xml
         
         # La primera fila es el header, las siguientes son para datos
