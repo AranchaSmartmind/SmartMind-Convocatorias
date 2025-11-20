@@ -28,7 +28,7 @@ class WordGeneratorSEPE:
                     for item in zf.namelist():
                         self.plantilla_zip_parts[item] = zf.read(item)
             except Exception as e:
-                print(f"⚠ Error leyendo DOCX: {e}")
+                print(f" Error leyendo DOCX: {e}")
     
     def generar_informe_individual(self, datos: Dict) -> bytes:
         """Genera informe rellenando campos de formulario y tabla de módulos"""
@@ -68,14 +68,14 @@ class WordGeneratorSEPE:
         # Valores en orden
         # IMPORTANTE: Solo hay 11 campos antes de la tabla de módulos
         valores = [
-            'E-2024-100454',                           # 1. Expediente
+            '',                                         # 1. Expediente
             alumno.get('nombre', ''),                   # 2. Nombre
             alumno.get('dni', ''),                      # 3. DNI
             curso.get('nombre', ''),                    # 4. Curso (completo, sin recortar)
-            'ADGG0408',                                 # 5. Código cert
+            '',                                         # 5. Código cert
             'INTERPROS NEXT GENERATION SLU',            # 6. Centro
             '26615',                                    # 7. Código centro
-            'C/ DR. SEVERO OCHOA, 21, BJ',             # 8. Dirección
+            'C/ DR. SEVERO OCHOA, 21, BJ',              # 8. Dirección
             'AVILÉS',                                   # 9. Localidad
             '33400',                                    # 10. CP
             'ASTURIAS',                                 # 11. Provincia
@@ -191,6 +191,8 @@ class WordGeneratorSEPE:
                     # Si no tiene sz, añadirlo
                     if '<w:sz' not in formato_base:
                         formato_base += '<w:sz w:val="16"/><w:szCs w:val="16"/>'
+                        
+                        
                 
                 formato = f'<w:rPr>{formato_base}</w:rPr>'
             else:
