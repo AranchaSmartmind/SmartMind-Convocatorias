@@ -1,6 +1,5 @@
 """
-Interfaz de Evaluación - Desempleados  
-Genera 3 tipos de actas: Individual, Grupal y Transversales
+Interfaz de Evaluación - Desempleados
 CON PLANTILLA INTEGRADA POR DEFECTO
 """
 import streamlit as st
@@ -18,7 +17,6 @@ try:
     from word_generator import WordGeneratorSEPE
 except:
     st.error("Error importando módulos")
-
 
 # Ruta de la plantilla integrada
 PLANTILLA_POR_DEFECTO = os.path.join(
