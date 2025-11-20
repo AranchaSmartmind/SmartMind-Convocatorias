@@ -16,8 +16,7 @@ try:
     from excel_processor import ExcelProcessorReal
     from word_generator import WordGeneratorSEPE
 except:
-    st.error("❌ Error importando módulos")
-
+    st.error("Error importando módulos")
 
 # Ruta de la plantilla integrada
 PLANTILLA_POR_DEFECTO = os.path.join(
@@ -29,95 +28,118 @@ PLANTILLA_POR_DEFECTO = os.path.join(
 def cargar_plantilla_por_defecto():
     """Carga la plantilla integrada en la aplicación"""
     try:
-        # Intentar varias ubicaciones posibles
         ubicaciones = [
-            PLANTILLA_POR_DEFECTO,  # Primera opción: junto al archivo
-            os.path.join(os.getcwd(), 'sections', 'evaluacion', 'plantilla_oficial.docx'),  # Desde raíz
-            os.path.join(os.path.dirname(__file__), '..', '..', 'plantilla_oficial.docx'),  # Relativa
+            PLANTILLA_POR_DEFECTO,
+            os.path.join(os.getcwd(), 'sections', 'evaluacion', 'plantilla_oficial.docx'),
+            os.path.join(os.path.dirname(__file__), '..', '..', 'plantilla_oficial.docx'),
         ]
         
         for ubicacion in ubicaciones:
             if os.path.exists(ubicacion):
                 with open(ubicacion, 'rb') as f:
                     contenido = f.read()
-                    if len(contenido) > 1000:  # Verificar que no esté vacío
-                        print(f"✓ Plantilla cargada desde: {ubicacion}")
+                    if len(contenido) > 1000:
+                        print(f" Plantilla cargada desde: {ubicacion}")
                         return contenido
         
-        print("⚠ No se encontró plantilla en ninguna ubicación")
+        print(" No se encontró plantilla en ninguna ubicación")
         return None
         
     except Exception as e:
-        print(f"⚠ Error cargando plantilla: {e}")
+        print(f" Error cargando plantilla: {e}")
         return None
 
 
 def render_tab_desempleados():
-    """Render tab para desempleados"""
+    """Render tab para desempleados con selector de tipo de acta"""
     
-    st.markdown("## 📋 Generador de Actas - Desempleados")
+    st.markdown("## Generador de Actas - Desempleados")
+    
+    # SELECTOR DE TIPO DE ACTA
+    st.markdown("### Tipo de Acta")
+    
+    tipo_acta = st.radio(
+        "Selecciona el tipo de acta a generar:",
+        options=["individual", "grupal", "transversales"],
+        format_func=lambda x: {
+            "individual": " Acta Individual",
+            "grupal": " Acta Grupal",
+            "transversales": " Transversales"
+        }[x],
+        key="desempleados_tipo_acta",
+        horizontal=True
+    )
+    
+    st.markdown("---")
+    
+    # Renderizar según el tipo seleccionado
+    if tipo_acta == "individual":
+        render_individual()
+    elif tipo_acta == "grupal":
+        render_grupal()
+    else:  # transversales
+        render_transversales()
+
+
+def render_individual():
+    """Render para actas individuales"""
+    
+    st.markdown("### Acta Individual")
     st.markdown("Genera informes individualizados para cada alumno")
     
     # Subida de archivos
-    st.markdown("### 📁 Archivos")
+    st.markdown("### Archivos")
     
     col1, col2, col3 = st.columns(3)
     
-    # Cronograma
     with col1:
-        st.markdown("**📅 Cronograma ⚠️**")
+        st.markdown("**Cronograma**")
         cronograma_file = st.file_uploader(
             "Excel cronograma*",
-            key="cronograma",
+            key="desempleados_individual_cronograma",  # KEY ÚNICA
             type=['xlsx', 'xls']
         )
         if cronograma_file:
-            st.success("✅ Cargado")
+            st.success("Cargado")
         else:
-            st.warning("⚠️ Requerido")
+            st.warning("Requerido")
     
-    # Asistencias
     with col2:
-        st.markdown("**👥 Asistencias ⚠️**")
+        st.markdown("**Asistencias**")
         asistencias_file = st.file_uploader(
             "Excel control asistencias*",
-            key="asistencias",
+            key="desempleados_individual_asistencias",  # KEY ÚNICA
             type=['xlsx', 'xls']
         )
         if asistencias_file:
-            st.success("✅ Cargado")
+            st.success("Cargado")
         else:
-            st.warning("⚠️ Requerido")
+            st.warning("Requerido")
     
-    # Plantilla (OPCIONAL)
     with col3:
-        st.markdown("**📄 Plantilla (Opcional)**")
+        st.markdown("**Plantilla (Opcional)**")
         plantilla_file = st.file_uploader(
             "Archivo Word (opcional)",
-            key="plantilla",
+            key="desempleados_individual_plantilla",  # KEY ÚNICA
             type=['docx', 'doc'],
             help="Si no subes ninguna, se usará la plantilla oficial SEPE predeterminada"
         )
         if plantilla_file:
-            st.success("✅ Personalizada")
+            st.success("Personalizada")
         else:
-            st.info("📋 Por defecto")
+            st.info("Por defecto")
     
-    # Ayuda
-    with st.expander("ℹ️ Información", expanded=False):
+    with st.expander("Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
         
-        1. **Cronograma** - Excel con fechas y módulos ⚠️ Requerido
-        2. **Asistencias** - Excel de control (formato: `XXXX_CTRL_Tareas_AREA.xlsx`) ⚠️ Requerido
+        1. **Cronograma** - Excel con fechas y módulos (Requerido)
+        2. **Asistencias** - Excel de control (Requerido)
         3. **Plantilla** - Word con formato oficial (opcional)
         
-        **💡 Plantilla predeterminada:**
+        **Plantilla predeterminada:**
         
-        Si NO subes una plantilla, se usará la plantilla oficial SEPE integrada con:
-        - ✅ Logos del Principado y Ministerio
-        - ✅ Formato oficial completo
-        - ✅ Campos predefinidos
+        Si NO subes una plantilla, se usará la plantilla oficial SEPE integrada.
         
         **Datos del centro (se rellenan automáticamente):**
         - Centro: INTERPROS NEXT GENERATION SLU
@@ -128,23 +150,21 @@ def render_tab_desempleados():
         - Provincia: ASTURIAS
         """)
     
-    # Validar solo cronograma y asistencias
     if not cronograma_file or not asistencias_file:
-        st.info("👆 Sube al menos el cronograma y asistencias para continuar")
+        st.info("Sube al menos el cronograma y asistencias para continuar")
         return
     
-    # Procesar archivos
     st.markdown("---")
     
     try:
-        with st.spinner('🔄 Procesando archivos...'):
+        with st.spinner('Procesando archivos...'):
             processor = ExcelProcessorReal()
             datos = processor.cargar_asistencias(asistencias_file.read())
         
-        st.success("✅ Datos procesados correctamente")
+        st.success("Datos procesados correctamente")
         
         # Mostrar resumen
-        st.markdown("### 📊 Resumen de Datos")
+        st.markdown("### Resumen de Datos")
         
         with st.expander("Ver datos extraídos", expanded=True):
             col1, col2, col3 = st.columns(3)
@@ -158,7 +178,6 @@ def render_tab_desempleados():
             
             st.markdown("---")
             
-            # Tabla de alumnos
             df = pd.DataFrame([{
                 'Nº': idx + 1,
                 'Alumno': a['nombre'],
@@ -171,25 +190,24 @@ def render_tab_desempleados():
         
         # Generación masiva
         st.markdown("---")
-        st.markdown("### 🚀 Generar Actas")
+        st.markdown("### Generar Actas")
         
-        if st.button("📦 Generar TODAS las Actas (Word)", type="primary", use_container_width=True):
+        if st.button("Generar TODAS las Actas (Word)", type="primary", use_container_width=True, key="desempleados_individual_generar_todas"):
             try:
                 alumnos = datos['alumnos']
                 total = len(alumnos)
                 
-                # Obtener plantilla (personalizada o por defecto)
                 if plantilla_file:
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
-                    st.info("📄 Usando plantilla personalizada")
+                    st.info("Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_por_defecto()
                     if plantilla_bytes:
-                        st.info("📋 Usando plantilla oficial SEPE predeterminada")
+                        st.info("Usando plantilla oficial SEPE predeterminada")
                     else:
-                        st.error("❌ No se pudo cargar la plantilla predeterminada")
-                        st.warning("⚠️ Sube una plantilla manualmente")
+                        st.error("No se pudo cargar la plantilla predeterminada")
+                        st.warning("Sube una plantilla manualmente")
                         return
                 
                 with st.spinner(f'Generando {total} actas...'):
@@ -201,7 +219,7 @@ def render_tab_desempleados():
                         
                         for idx, alumno in enumerate(alumnos):
                             progress.progress((idx + 1) / total)
-                            status.text(f"📄 {idx + 1}/{total}: {alumno['nombre'][:40]}")
+                            status.text(f"{idx + 1}/{total}: {alumno['nombre'][:40]}")
                             
                             datos_alumno = {
                                 'alumno': alumno,
@@ -218,44 +236,46 @@ def render_tab_desempleados():
                             zf.writestr(f"{nombre}.docx", doc)
                         
                         progress.progress(1.0)
-                        status.text(f"✅ {total} actas generadas")
+                        status.text(f"{total} actas generadas")
                     
                     zip_buffer.seek(0)
-                    st.session_state['zip_actas'] = zip_buffer.getvalue()
-                    st.session_state['nombre_zip'] = f"Actas_{datos['curso_codigo'].replace('/', '_')}.zip"
+                    st.session_state['zip_actas_desempleados_individual'] = zip_buffer.getvalue()
+                    st.session_state['nombre_zip_desempleados_individual'] = f"Actas_Individual_Desempleados_{datos['curso_codigo'].replace('/', '_')}.zip"
                 
                 st.balloons()
-                st.success(f"🎉 {total} actas generadas correctamente")
+                st.success(f"{total} actas generadas correctamente")
                 
             except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
+                st.error(f"Error: {str(e)}")
                 st.exception(e)
         
         # Descarga
-        if 'zip_actas' in st.session_state:
+        if 'zip_actas_desempleados_individual' in st.session_state:
             st.markdown("---")
-            st.markdown("### 💾 Descargar")
+            st.markdown("### Descargar")
             
             st.download_button(
-                label="⬇️ Descargar ZIP con todas las actas",
-                data=st.session_state['zip_actas'],
-                file_name=st.session_state['nombre_zip'],
+                label="Descargar ZIP con todas las actas",
+                data=st.session_state['zip_actas_desempleados_individual'],
+                file_name=st.session_state['nombre_zip_desempleados_individual'],
                 mime="application/zip",
                 type="primary",
-                use_container_width=True
+                use_container_width=True,
+                key="desempleados_individual_download"
             )
         
         # Vista individual
         st.markdown("---")
-        st.markdown("### 👤 Vista Individual")
+        st.markdown("### Vista Individual")
         
         alumno_seleccionado = st.selectbox(
             "Selecciona un alumno",
             options=range(len(datos['alumnos'])),
-            format_func=lambda x: f"{x+1}. {datos['alumnos'][x]['nombre']} - {datos['alumnos'][x]['dni']}"
+            format_func=lambda x: f"{x+1}. {datos['alumnos'][x]['nombre']} - {datos['alumnos'][x]['dni']}",
+            key="desempleados_individual_selector"
         )
         
-        if st.button("🔍 Generar vista previa", use_container_width=True):
+        if st.button("Generar vista previa", use_container_width=True, key="desempleados_individual_preview"):
             try:
                 alumno = datos['alumnos'][alumno_seleccionado]
                 
@@ -267,7 +287,6 @@ def render_tab_desempleados():
                     }
                 }
                 
-                # Usar plantilla (personalizada o por defecto)
                 if plantilla_file:
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
@@ -279,22 +298,55 @@ def render_tab_desempleados():
                     doc = gen.generar_informe_individual(datos_ind)
                     
                     st.download_button(
-                        label="⬇️ Descargar informe individual",
+                        label="Descargar informe individual",
                         data=doc,
                         file_name=f"{alumno['nombre'].replace(' ', '_')}.docx",
                         mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                        use_container_width=True
+                        use_container_width=True,
+                        key="desempleados_individual_download_one"
                     )
                 else:
-                    st.error("❌ No hay plantilla disponible")
+                    st.error("No hay plantilla disponible")
                     
             except Exception as e:
-                st.error(f"❌ Error: {str(e)}")
+                st.error(f"Error: {str(e)}")
                 st.exception(e)
     
     except Exception as e:
-        st.error(f"❌ Error procesando archivos: {str(e)}")
+        st.error(f"Error procesando archivos: {str(e)}")
         st.exception(e)
+
+
+def render_grupal():
+    """Render para acta grupal"""
+    
+    st.markdown("### Acta Grupal")
+    st.markdown("Genera un informe con todos los alumnos del curso")
+    
+    st.info(" Funcionalidad en desarrollo")
+    st.markdown("""
+    **Próximamente:**
+    - Informe con resumen de todo el grupo
+    - Estadísticas globales
+    - Listado completo de alumnos
+    - Análisis de asistencia grupal
+    """)
+
+
+def render_transversales():
+    """Render para transversales"""
+    
+    st.markdown("### Transversales")
+    st.markdown("Genera informes de competencias transversales")
+    
+    st.info(" Funcionalidad en desarrollo")
+    st.markdown("""
+    **Próximamente:**
+    - Evaluación de competencias transversales
+    - Análisis de habilidades blandas
+    - Informes específicos por competencia
+    - Gráficos de evolución
+    """)
 
 
 if __name__ == "__main__":
