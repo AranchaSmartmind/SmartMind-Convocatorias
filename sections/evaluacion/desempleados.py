@@ -15,6 +15,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 try:
     from excel_processor import ExcelProcessorReal
     from word_generator import WordGeneratorSEPE
+    from cronograma_processor import CronogramaProcessor
+    from word_generator_grupal import WordGeneratorActaGrupal
 except:
     st.error("Error importando módulos")
 
@@ -47,6 +49,34 @@ def cargar_plantilla_por_defecto():
         
     except Exception as e:
         print(f" Error cargando plantilla: {e}")
+        return None
+    
+def cargar_plantilla_grupal_por_defecto():
+    """Carga la plantilla grupal integrada en la aplicación"""
+    try:
+        plantilla_grupal = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)), 
+            'plantilla_grupal_oficial.docx'
+        )
+        
+        ubicaciones = [
+            plantilla_grupal,
+            os.path.join(os.getcwd(), 'sections', 'evaluacion', 'plantilla_grupal_oficial.docx'),
+        ]
+        
+        for ubicacion in ubicaciones:
+            if os.path.exists(ubicacion):
+                with open(ubicacion, 'rb') as f:
+                    contenido = f.read()
+                    if len(contenido) > 1000:
+                        print(f"✓ Plantilla grupal cargada desde: {ubicacion}")
+                        return contenido
+        
+        print(" No se encontró plantilla grupal")
+        return None
+        
+    except Exception as e:
+        print(f" Error cargando plantilla grupal: {e}")
         return None
 
 
@@ -321,16 +351,207 @@ def render_grupal():
     """Render para acta grupal"""
     
     st.markdown("### Acta Grupal")
-    st.markdown("Genera un informe con todos los alumnos del curso")
+    st.markdown("Genera el acta de evaluación final con todos los alumnos del grupo")
     
-    st.info(" Funcionalidad en desarrollo")
-    st.markdown("""
-    **Próximamente:**
-    - Informe con resumen de todo el grupo
-    - Estadísticas globales
-    - Listado completo de alumnos
-    - Análisis de asistencia grupal
-    """)
+    # Subida de archivos
+    st.markdown("### Archivos")
+    
+    col1, col2, col3 = st.columns(3)
+    
+    with col1:
+        st.markdown("**Cronograma**")
+        cronograma_file = st.file_uploader(
+            "Excel cronograma*",
+            key="desempleados_grupal_cronograma",
+            type=['xlsx', 'xls']
+        )
+        if cronograma_file:
+            st.success("Cargado")
+        else:
+            st.warning("Requerido")
+    
+    with col2:
+        st.markdown("**Asistencias**")
+        asistencias_file = st.file_uploader(
+            "Excel control asistencias*",
+            key="desempleados_grupal_asistencias",
+            type=['xlsx', 'xls']
+        )
+        if asistencias_file:
+            st.success("Cargado")
+        else:
+            st.warning("Requerido")
+    
+    with col3:
+        st.markdown("**Plantilla (Opcional)**")
+        plantilla_file = st.file_uploader(
+            "Archivo Word (opcional)",
+            key="desempleados_grupal_plantilla",
+            type=['docx', 'doc'],
+            help="Si no subes ninguna, se usará la plantilla oficial SEPE predeterminada"
+        )
+        if plantilla_file:
+            st.success("Personalizada")
+        else:
+            st.info("Por defecto")
+    
+    with st.expander("Información", expanded=False):
+        st.markdown("""
+        **Archivos necesarios:**
+        
+        1. **Cronograma** - Excel con fechas del curso (Requerido)
+        2. **Asistencias** - Excel de control (Requerido)
+        3. **Plantilla** - Word con formato oficial (opcional)
+        
+        **Plantilla predeterminada:**
+        
+        Si NO subes una plantilla, se usará la plantilla oficial SEPE de acta grupal integrada.
+        
+        **El acta incluye:**
+        - Datos del curso y centro
+        - Fechas de inicio y finalización
+        - Tabla con todos los alumnos
+        - Calificaciones por módulo
+        - Resultado final (APTO/NO APTO)
+        - Firmas y observaciones
+        """)
+    
+    if not cronograma_file or not asistencias_file:
+        st.info("Sube el cronograma y asistencias para continuar")
+        return
+    
+    st.markdown("---")
+    
+    try:
+        with st.spinner('Procesando archivos...'):
+            # Procesar asistencias
+            processor = ExcelProcessorReal()
+            datos = processor.cargar_asistencias(asistencias_file.read())
+            
+            # Procesar cronograma
+            crono_processor = CronogramaProcessor()
+            cronograma_file.seek(0)
+            datos_cronograma = crono_processor.cargar_cronograma(cronograma_file.read())
+        
+        st.success("Datos procesados correctamente")
+        
+        # Mostrar resumen
+        st.markdown("### Resumen del Grupo")
+        
+        with st.expander("Ver datos del grupo", expanded=True):
+            # Métricas
+            col1, col2, col3, col4 = st.columns(4)
+            
+            with col1:
+                st.metric("Total Alumnos", len(datos['alumnos']))
+            
+            with col2:
+                aptos = sum(1 for a in datos['alumnos'] 
+                           if a['porcentaje_asistencia'] >= 75)
+                st.metric("APTOS", aptos)
+            
+            with col3:
+                no_aptos = len(datos['alumnos']) - aptos
+                st.metric("NO APTOS", no_aptos)
+            
+            with col4:
+                st.metric("Asistencia Media", 
+                         f"{datos['estadisticas_grupales']['porcentaje_asistencia_media']}%")
+            
+            st.markdown("---")
+            
+            # Información del curso
+            st.markdown("**Información del Curso**")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.text(f"Curso: {datos['curso_nombre']}")
+                st.text(f"Código: {datos['curso_codigo']}")
+            with col2:
+                st.text(f"Fecha inicio: {datos_cronograma.get('fecha_inicio', 'N/A')}")
+                st.text(f"Fecha fin: {datos_cronograma.get('fecha_fin', 'N/A')}")
+            
+            st.markdown("---")
+            
+            # Tabla de alumnos
+            st.markdown("**Listado de Alumnos**")
+            df = pd.DataFrame([{
+                'Nº': idx + 1,
+                'Alumno': a['nombre'],
+                'DNI': a['dni'],
+                'Asistencia': f"{a['porcentaje_asistencia']}%",
+                'Resultado': 'APTO' if a['porcentaje_asistencia'] >= 75 else 'NO APTO'
+            } for idx, a in enumerate(datos['alumnos'])])
+            
+            st.dataframe(df, use_container_width=True, hide_index=True)
+        
+        # Generar acta
+        st.markdown("---")
+        st.markdown("### Generar Acta Grupal")
+        
+        if st.button("Generar Acta Grupal", 
+                    type="primary", 
+                    use_container_width=True,
+                    key="desempleados_grupal_generar"):
+            try:
+                # Preparar datos para el acta
+                datos_acta = {
+                    'curso_codigo': datos['curso_codigo'],
+                    'curso_nombre': datos['curso_nombre'],
+                    'centro': 'INTERPROS NEXT GENERATION SLU',
+                    'codigo_centro': '26615',
+                    'fecha_inicio': datos_cronograma.get('fecha_inicio', ''),
+                    'fecha_fin': datos_cronograma.get('fecha_fin', ''),
+                    'alumnos': datos['alumnos']
+                }
+                
+                # Obtener plantilla (personalizada o por defecto)
+                if plantilla_file:
+                    plantilla_file.seek(0)
+                    plantilla_bytes = plantilla_file.read()
+                    st.info("Usando plantilla personalizada")
+                else:
+                    plantilla_bytes = cargar_plantilla_grupal_por_defecto()
+                    if plantilla_bytes:
+                        st.info("Usando plantilla oficial SEPE predeterminada")
+                    else:
+                        st.error("No se encontró la plantilla predeterminada")
+                        st.warning("Sube una plantilla manualmente")
+                        return
+                
+                # Generar acta
+                with st.spinner('Generando acta grupal...'):
+                    gen = WordGeneratorActaGrupal(plantilla_bytes)
+                    doc = gen.generar_acta_grupal(datos_acta)
+                    
+                    # Guardar en session state
+                    st.session_state['acta_grupal_desempleados'] = doc
+                    st.session_state['nombre_acta_grupal_desempleados'] = f"Acta_Grupal_Desempleados_{datos['curso_codigo'].replace('/', '_')}.docx"
+                
+                st.balloons()
+                st.success("¡Acta grupal generada correctamente!")
+                
+            except Exception as e:
+                st.error(f"Error generando acta: {str(e)}")
+                st.exception(e)
+        
+        # Descarga
+        if 'acta_grupal_desempleados' in st.session_state:
+            st.markdown("---")
+            st.markdown("### Descargar")
+            
+            st.download_button(
+                label="Descargar Acta Grupal",
+                data=st.session_state['acta_grupal_desempleados'],
+                file_name=st.session_state['nombre_acta_grupal_desempleados'],
+                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                type="primary",
+                use_container_width=True,
+                key="desempleados_grupal_download"
+            )
+    
+    except Exception as e:
+        st.error(f"Error procesando archivos: {str(e)}")
+        st.exception(e)
 
 
 def render_transversales():
