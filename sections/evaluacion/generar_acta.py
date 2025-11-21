@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Script principal para generar Acta Grupal
-Usa tu archivo word_generator_grupal.py existente
+Script principal para generar Acta Grupal MULTIPÁGINA
 """
 
 import sys
 import os
 
-# Importar tu generador existente
-from word_generator_grupal import WordGeneratorActaGrupal
+# Importar el generador MULTIPÁGINA
+from word_generator_grupal import WordGeneratorMultipaginaDuplicaTodo
 
 # Importar el procesador de Excel
 from excel_processor_grupal import ExcelProcessor
@@ -41,7 +40,7 @@ def main():
     
     try:
         print("="*60)
-        print("🎓 GENERADOR DE ACTA GRUPAL")
+        print("🎓 GENERADOR DE ACTA GRUPAL MULTIPÁGINA")
         print("="*60)
         
         # 1. Procesar Excel
@@ -49,18 +48,22 @@ def main():
         processor = ExcelProcessor(excel_path)
         datos = processor.cargar_datos()
         
+        total_alumnos = len(datos['alumnos'])
+        num_paginas = (total_alumnos + 14) // 15
+        
         print(f"\n📊 Resumen:")
         print(f"   - Curso: {datos['curso_codigo']}")
-        print(f"   - Alumnos: {len(datos['alumnos'])}")
+        print(f"   - Alumnos: {total_alumnos}")
+        print(f"   - Páginas a generar: {num_paginas}")
         
         # 2. Cargar plantilla
         print(f"\n📄 Cargando plantilla: {plantilla_path}")
         with open(plantilla_path, 'rb') as f:
             plantilla_bytes = f.read()
         
-        # 3. Generar acta usando TU clase
-        print("\n🔄 Generando acta con word_generator_grupal.py...")
-        generador = WordGeneratorActaGrupal(plantilla_bytes)
+        # 3. Usar el generador MULTIPÁGINA
+        print("\n🔄 Generando acta multipágina...")
+        generador = WordGeneratorMultipaginaDuplicaTodo(plantilla_bytes)
         acta_bytes = generador.generar_acta_grupal(datos)
         
         # 4. Guardar
@@ -68,11 +71,32 @@ def main():
         with open(output_path, 'wb') as f:
             f.write(acta_bytes)
         
+        # 5. Verificar que se generó correctamente
+        import zipfile
+        import re
+        import io
+        
+        with zipfile.ZipFile(io.BytesIO(acta_bytes), 'r') as z:
+            xml = z.read('word/document.xml').decode('utf-8')
+        
+        dnis = re.findall(r'<w:t[^>]*>(\d{8}[A-Z]|[XYZ]\d{7}[A-Z])</w:t>', xml)
+        
         print("\n" + "="*60)
         print("✅ ¡ACTA GENERADA EXITOSAMENTE!")
         print("="*60)
         print(f"\n📄 Archivo generado: {output_path}")
         print(f"📏 Tamaño: {len(acta_bytes) / 1024:.1f} KB")
+        print(f"👥 Alumnos en el documento: {len(dnis)}")
+        
+        if len(dnis) == total_alumnos:
+            print(f"\n✅ Todos los {total_alumnos} alumnos están incluidos")
+            print(f"✅ El documento tiene {num_paginas} páginas de alumnos")
+        else:
+            print(f"\n⚠️ ADVERTENCIA: Se esperaban {total_alumnos} alumnos pero se encontraron {len(dnis)}")
+        
+        print(f"\n💡 Si al abrir en Word no ves todos los alumnos:")
+        print(f"   1. Presiona Ctrl+A (seleccionar todo)")
+        print(f"   2. Presiona F9 (actualizar campos)")
         
     except FileNotFoundError as e:
         print(f"\n❌ Error: Archivo no encontrado")

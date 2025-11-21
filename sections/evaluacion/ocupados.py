@@ -10,6 +10,8 @@ import os
 
 # Importar los procesadores
 import sys
+
+from sections.evaluacion.word_generator_grupal import WordGeneratorMultipaginaDuplicaTodo
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 try:
@@ -521,7 +523,7 @@ def render_grupal():
                 
                 # Generar acta
                 with st.spinner('Generando acta grupal...'):
-                    gen = WordGeneratorActaGrupal(plantilla_bytes)
+                    gen = WordGeneratorMultipaginaDuplicaTodo(plantilla_bytes)
                     doc = gen.generar_acta_grupal(datos_acta)
                     
                     # Guardar en session state
