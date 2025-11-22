@@ -1,447 +1,494 @@
-"""
-Estilos CSS y estructura HTML para SmartMind
-Réplica exacta del diseño de la imagen de referencia
-"""
-
 def get_custom_styles():
-    """Retorna los estilos CSS personalizados para SmartMind"""
     return """
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
-    
-    :root {
-        /* Colores de los botones circulares */
-        --color-design: #1abc9c;
-        --color-web: #e67e22;
-        --color-market: #e91e63;
-        --color-graphic: #9b59b6;
-        --color-search: #e74c3c;
-        --color-develop: #3498db;
-        
-        /* Colores de fondo */
-        --bg-brown: #7d6b5d;
-        --bg-warm: #a89080;
-        
-        /* Textos */
-        --text-dark: #2c2c2c;
-        --text-light: #ffffff;
-        --text-medium: #555555;
-    }
-    
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        font-family: 'Poppins', sans-serif !important;
-    }
-    
-    /* Ocultar elementos de Streamlit */
-    #MainMenu {visibility: hidden;}
-    footer {visibility: hidden;}
-    header {visibility: hidden;}
-    
-    /* Fondo principal - gradiente cálido como la imagen */
-    .stApp {
-        background: linear-gradient(135deg, #7d6b5d 0%, #9d8b7a 50%, #b8a89a 100%);
-        background-attachment: fixed;
-    }
-    
-    [data-testid="stSidebar"] {
-        display: none !important;
-    }
-    
-    /* Hero Banner - Réplica exacta */
-    .hero-banner {
-        background: linear-gradient(135deg, rgba(50, 50, 50, 0.9) 0%, rgba(70, 70, 70, 0.85) 100%);
-        border-radius: 0;
-        padding: 0;
-        margin: -2rem -2rem 2rem -2rem;
-        min-height: 400px;
-        position: relative;
-        overflow: hidden;
-        display: flex;
-        align-items: center;
-    }
-    
-    .hero-content {
-        padding: 3rem 4rem;
-        flex: 1;
-        z-index: 2;
-    }
-    
-    .hero-badge {
-        display: inline-block;
-        color: var(--text-light);
-        font-size: 0.75rem;
-        font-weight: 500;
-        letter-spacing: 2px;
-        margin-bottom: 1rem;
-        text-transform: uppercase;
-    }
-    
-    .hero-title {
-        color: var(--text-light) !important;
-        font-size: 3.5rem !important;
-        font-weight: 900 !important;
-        line-height: 1.1 !important;
-        margin-bottom: 1rem !important;
-        text-transform: uppercase;
-        letter-spacing: -2px;
-    }
-    
-    .hero-subtitle {
-        color: var(--text-light) !important;
-        font-size: 1.5rem !important;
-        font-weight: 400 !important;
-        margin-bottom: 2rem !important;
-    }
-    
-    .hero-image {
-        position: absolute;
-        right: 5%;
-        top: 50%;
-        transform: translateY(-50%);
-        max-width: 400px;
-        z-index: 1;
-    }
-    
-    .hero-image img {
-        width: 100%;
-        height: auto;
-    }
-    
-    /* Botones circulares de navegación - EXACTOS a la imagen */
-    .navigation-circles {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        margin-top: 2rem;
-        padding: 0;
-    }
-    
-    .circle-button {
-        width: 90px;
-        height: 90px;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-        border: none;
-        text-align: center;
-        line-height: 1.2;
-    }
-    
-    .circle-button:hover {
-        transform: translateY(-5px) scale(1.05);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
-    }
-    
-    .circle-button.active {
-        transform: scale(1.1);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
-    }
-    
-    .btn-design { background: var(--color-design); }
-    .btn-web { background: var(--color-web); }
-    .btn-market { background: var(--color-market); }
-    .btn-graphic { background: var(--color-graphic); }
-    .btn-search { background: var(--color-search); }
-    .btn-develop { background: var(--color-develop); }
-    
-    /* Sección de clientes/logos - Como en la imagen */
-    .clients-bar {
-        background: rgba(255, 255, 255, 0.3);
-        padding: 1.5rem 2rem;
-        margin: 2rem -2rem -2rem -2rem;
-        text-align: center;
-    }
-    
-    .clients-title {
-        color: var(--text-medium);
-        font-size: 0.75rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 2px;
-        margin-bottom: 1.5rem;
-    }
-    
-    .clients-logos {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 3rem;
-        flex-wrap: wrap;
-    }
-    
-    .client-logo {
-        height: 30px;
-        opacity: 0.7;
-        filter: grayscale(100%);
-        transition: all 0.3s ease;
-    }
-    
-    .client-logo:hover {
-        opacity: 1;
-        filter: grayscale(0%);
-    }
-    
-    /* Contenedor de contenido principal */
-    .content-section {
-        background: rgba(255, 255, 255, 0.95);
-        border-radius: 20px;
-        padding: 3rem;
-        margin-bottom: 2rem;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-    }
-    
-    /* Títulos */
-    h1, h2, h3 {
-        color: var(--text-dark) !important;
-        font-weight: 700 !important;
-    }
-    
-    h1 {
-        font-size: 2.5rem !important;
-        margin-bottom: 1.5rem !important;
-    }
-    
-    h2 {
-        font-size: 2rem !important;
-        margin-bottom: 1rem !important;
-    }
-    
-    h3 {
-        font-size: 1.5rem !important;
-        margin-bottom: 0.875rem !important;
-    }
-    
-    /* Textos */
-    p, label, span {
-        color: var(--text-dark) !important;
-        line-height: 1.6;
-    }
-    
-    /* Botones principales de Streamlit */
-    .stButton > button {
-        background: var(--color-web) !important;
-        color: white !important;
-        font-weight: 700 !important;
-        font-size: 1rem !important;
-        border: none !important;
-        border-radius: 50px !important;
-        padding: 1rem 2.5rem !important;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2) !important;
-        transition: all 0.3s ease !important;
-    }
-    
-    .stButton > button:hover {
-        transform: translateY(-3px) !important;
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3) !important;
-    }
-    
-    /* Inputs */
-    .stTextInput > div > div > input,
-    .stSelectbox > div > div > select,
-    .stTextArea > div > div > textarea {
-        background: white !important;
-        border: 2px solid #ddd !important;
-        border-radius: 10px !important;
-        padding: 0.875rem 1rem !important;
-        font-size: 1rem !important;
-    }
-    
-    .stTextInput > div > div > input:focus,
-    .stSelectbox > div > div > select:focus,
-    .stTextArea > div > div > textarea:focus {
-        border-color: var(--color-web) !important;
-        box-shadow: 0 0 0 3px rgba(230, 126, 34, 0.1) !important;
-    }
-    
-    /* Labels */
-    .stTextInput > label,
-    .stSelectbox > label,
-    .stTextArea > label {
-        color: var(--text-dark) !important;
-        font-weight: 600 !important;
-        margin-bottom: 0.5rem !important;
-    }
-    
-    /* Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 0.5rem;
-        background: transparent;
-        border-bottom: none;
-    }
-    
-    .stTabs [data-baseweb="tab"] {
-        background: rgba(255, 255, 255, 0.7);
-        border-radius: 10px;
-        padding: 0.75rem 1.5rem;
-        font-weight: 600;
-        border: none;
-    }
-    
-    .stTabs [aria-selected="true"] {
-        background: var(--color-web) !important;
-        color: white !important;
-    }
-    
-    /* File uploader */
-    [data-testid="stFileUploader"] {
-        background: white;
-        border: 2px dashed #ddd;
-        border-radius: 15px;
-        padding: 2rem;
-    }
-    
-    [data-testid="stFileUploader"]:hover {
-        border-color: var(--color-web);
-    }
-    
-    /* Métricas */
-    [data-testid="stMetricValue"] {
-        color: var(--color-web) !important;
-        font-size: 2rem !important;
-        font-weight: 800 !important;
-    }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar {
-        width: 10px;
-    }
-    
-    ::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.1);
-    }
-    
-    ::-webkit-scrollbar-thumb {
-        background: var(--color-web);
-        border-radius: 10px;
-    }
-    
-    /* Responsive */
-    @media (max-width: 768px) {
-        .hero-banner {
-            margin: -1rem -1rem 2rem -1rem;
-            min-height: 300px;
-        }
-        
-        .hero-content {
-            padding: 2rem;
-        }
-        
-        .hero-title {
-            font-size: 2.5rem !important;
-        }
-        
-        .hero-image {
-            display: none;
-        }
-        
-        .circle-button {
-            width: 70px;
-            height: 70px;
-            font-size: 0.65rem;
-        }
-        
-        .content-section {
-            padding: 2rem;
-        }
-    }
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Poppins:wght@300;400;500&display=swap');
+
+:root {
+    --holo-blue: #4fc3f7;
+    --holo-glow: rgba(79,195,247,0.7);
+    --panel-dark: rgba(20,25,35,0.94);
+    --text-light: #e6f7ff;
+    --text-bright: #ffffff;
+}
+
+.stApp {
+    background: radial-gradient(circle at 20% 20%, #1c2331, #0b0e14 70%);
+    color: var(--text-bright);
+    font-family: 'Poppins', sans-serif;
+}
+
+[data-testid="stSidebar"] { display: block !important; }
+header, footer, #MainMenu { visibility: hidden; }
+
+.main .block-container {
+    padding-top: 1rem !important;
+    max-width: 100% !important;
+}
+
+/* =============================
+   SIDEBAR
+============================= */
+[data-testid="stSidebar"] {
+    background: var(--panel-dark) !important;
+    border-right: 3px solid var(--holo-blue) !important;
+    padding-top: 0 !important;
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    background: var(--panel-dark) !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Eliminar padding del contenedor interno */
+[data-testid="stSidebar"] .block-container,
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    gap: 0 !important;
+}
+
+/* Primer elemento del sidebar sin margen superior */
+[data-testid="stSidebar"] > div > div {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+[data-testid="stSidebar"] h3 {
+    font-family: 'Orbitron', sans-serif !important;
+    color: var(--holo-blue) !important;
+    font-weight: 800 !important;
+    font-size: 1.2rem !important;
+    text-align: center !important;
+    margin-top: 0rem !important;
+    margin-bottom: 0.4rem !important;
+    text-shadow: 0 0 10px var(--holo-glow);
+}
+
+[data-testid="stSidebar"] hr {
+    border-color: var(--holo-blue) !important;
+    opacity: 0.3 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.4rem !important;
+}
+
+[data-testid="stSidebar"] button {
+    background: transparent !important;
+    color: var(--text-light) !important;
+    font-family: 'Orbitron', sans-serif !important;
+    margin-top: 0.5rem !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    border: 2px solid transparent !important;
+    border-radius: 10px !important;
+    padding: 1rem 1.2rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    width: 100% !important;
+    text-align: left !important;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: 0.5px !important;
+}
+
+[data-testid="stSidebar"] button:hover {
+    background: rgba(79,195,247,0.15) !important;
+    border-color: var(--holo-blue) !important;
+    color: var(--holo-blue) !important;
+    transform: translateX(5px) !important;
+    box-shadow: 0 4px 15px rgba(79,195,247,0.3) !important;
+}
+
+[data-testid="stSidebar"] button:active,
+[data-testid="stSidebar"] button:focus {
+    background: rgba(79,195,247,0.25) !important;
+    border-color: var(--holo-blue) !important;
+    color: var(--holo-blue) !important;
+    box-shadow: 0 4px 20px rgba(79,195,247,0.4) !important;
+}
+
+[data-testid="stSidebar"]::-webkit-scrollbar {
+    width: 10px;
+}
+
+[data-testid="stSidebar"]::-webkit-scrollbar-thumb {
+    background: var(--holo-blue);
+    border-radius: 5px;
+}
+
+[data-testid="stSidebar"]::-webkit-scrollbar-track {
+    background: rgba(0,0,0,0.2);
+}
+
+/* =============================
+   BOTONES - ESTILO UNIFICADO PARA TODA LA APP
+============================= */
+
+/* TODOS los botones - estilo sidebar */
+.stButton > button,
+.main .stButton > button,
+button[kind="primary"],
+button[kind="secondary"],
+.stDownloadButton > button,
+button[data-baseweb="button"] {
+    background: transparent !important;
+    color: var(--text-light) !important;
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    border: 2px solid var(--holo-blue) !important;
+    border-radius: 10px !important;
+    padding: 0.75rem 1.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Hover para TODOS los botones */
+.stButton > button:hover,
+.main .stButton > button:hover,
+button[kind="primary"]:hover,
+button[kind="secondary"]:hover,
+.stDownloadButton > button:hover,
+button[data-baseweb="button"]:hover {
+    background: rgba(79,195,247,0.15) !important;
+    border-color: var(--holo-blue) !important;
+    color: var(--holo-blue) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(79,195,247,0.3) !important;
+}
+
+/* Active/Focus para TODOS los botones */
+.stButton > button:active,
+.stButton > button:focus,
+.main .stButton > button:active,
+button[kind="primary"]:active,
+button[kind="secondary"]:active,
+.stDownloadButton > button:active,
+button[data-baseweb="button"]:active {
+    background: rgba(79,195,247,0.25) !important;
+    transform: translateY(0px) !important;
+    box-shadow: 0 4px 20px rgba(79,195,247,0.4) !important;
+}
+
+/* =============================
+   TEXTOS VISIBLES
+============================= */
+p, span, div, label {
+    color: var(--text-bright) !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 800 !important;
+    color: var(--text-bright) !important;
+}
+
+h1 {
+    font-size: 2rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+label {
+    color: var(--text-bright) !important;
+    font-weight: 500 !important;
+}
+
+/* =============================
+   FILE UPLOADER - TEXTO OSCURO
+============================= */
+
+/* Label principal - blanco (fuera del cuadro) */
+[data-testid="stFileUploader"] > label {
+    color: var(--text-bright) !important;
+    font-weight: 600 !important;
+}
+
+/* Texto DENTRO del cuadro blanco - azul oscuro */
+[data-testid="stFileUploader"] section {
+    background-color: white !important;
+}
+
+[data-testid="stFileUploader"] section span,
+[data-testid="stFileUploader"] section p,
+[data-testid="stFileUploader"] section div {
+    color: #1c2331 !important;
+    font-weight: 500 !important;
+}
+
+/* "Drag and drop file here" - azul más oscuro */
+[data-testid="stFileUploader"] section > div > div > div > span {
+    color: #0b0e14 !important;
+    font-weight: 600 !important;
+}
+
+/* "Limit 200MB..." - gris oscuro */
+[data-testid="stFileUploader"] section small,
+[data-testid="stFileUploader"] small {
+    color: #4a5568 !important;
+    font-weight: 400 !important;
+}
+
+/* Botón Browse files */
+[data-testid="stFileUploader"] button {
+    color: #1c2331 !important;
+    border-color: #1c2331 !important;
+    background-color: transparent !important;
+    font-weight: 600 !important;
+}
+
+[data-testid="stFileUploader"] button:hover {
+    background-color: rgba(28, 35, 49, 0.1) !important;
+    color: #0b0e14 !important;
+}
+
+/* =============================
+   TABS - TAB SELECCIONADO MÁS VISIBLE
+============================= */
+
+/* Tabs normales (no seleccionados) */
+button[data-baseweb="tab"] {
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-weight: 500 !important;
+    border-bottom: 3px solid transparent !important;
+    transition: all 0.3s ease !important;
+}
+
+button[data-baseweb="tab"]:hover {
+    color: var(--text-bright) !important;
+    border-bottom-color: rgba(79, 195, 247, 0.5) !important;
+}
+
+/* Tab seleccionado - MUY VISIBLE */
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: var(--holo-blue) !important;
+    font-weight: 700 !important;
+    border-bottom: 3px solid var(--holo-blue) !important;
+    background: rgba(79, 195, 247, 0.1) !important;
+}
+
+/* Línea indicadora del tab */
+.stTabs [data-baseweb="tab-highlight"] {
+    background-color: var(--holo-blue) !important;
+    height: 3px !important;
+}
+
+.stTabs [data-baseweb="tab-border"] {
+    background-color: rgba(79, 195, 247, 0.3) !important;
+}
+
+/* Contenedor de tabs */
+[data-baseweb="tab-list"] {
+    gap: 0 !important;
+}
+
+button[data-baseweb="tab"] {
+    padding: 0.75rem 1.5rem !important;
+}
 </style>
 """
 
-def get_hero_html():
-    """Retorna el HTML del hero banner con botones circulares"""
-    return """
-<div class="hero-banner">
-    <div class="hero-content">
-        <div class="hero-badge">SIT BACK & RELAX, WE WILL</div>
-        <h1 class="hero-title">APRENDE<br>MEJORA &<br>CRECE</h1>
-        <p class="hero-subtitle">CON NUESTRAS FORMACIONES</p>
-        
-        <div class="navigation-circles">
-            <button class="circle-button btn-design" onclick="navigateToSection('design')">
-                DISEÑO
-            </button>
-            <button class="circle-button btn-web" onclick="navigateToSection('web')">
-                WEB
-            </button>
-            <button class="circle-button btn-market" onclick="navigateToSection('marketing')">
-                MARKETING
-            </button>
-            <button class="circle-button btn-graphic" onclick="navigateToSection('grafico')">
-                GRÁFICO
-            </button>
-            <button class="circle-button btn-search" onclick="navigateToSection('seo')">
-                SEO
-            </button>
-            <button class="circle-button btn-develop" onclick="navigateToSection('desarrollo')">
-                DESARROLLO
-            </button>
-        </div>
-    </div>
+
+def get_interpros_logo(image_path='assets/logo.png'):
+    """Genera el HTML del logo de INTERPROS - VERSIÓN MINI"""
+    import base64
+    import os
     
-    <div class="hero-image">
-        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=500" alt="Formación" />
-    </div>
+    # Intentar múltiples ubicaciones
+    ubicaciones = [
+        image_path,
+        os.path.join(os.getcwd(), 'assets', 'logo.png'),
+        os.path.join(os.path.dirname(__file__), '..', 'assets', 'logo.png'),
+    ]
+    
+    image_base64 = None
+    for ubicacion in ubicaciones:
+        if os.path.exists(ubicacion):
+            try:
+                with open(ubicacion, 'rb') as f:
+                    image_base64 = base64.b64encode(f.read()).decode()
+                print(f"✓ Logo cargado desde: {ubicacion}")
+                break
+            except Exception as e:
+                print(f"Error cargando {ubicacion}: {e}")
+                continue
+    
+    if not image_base64:
+        print("⚠ No se encontró el logo en ninguna ubicación")
+        return ""
+    
+    return f"""
+<style>
+.interpros-logo {{
+    text-align: center;
+    margin: 0;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    padding: 0;
+    line-height: 0;
+}}
+
+.interpros-logo img {{
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: white;
+    padding: 10px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}}
+</style>
+<div class="interpros-logo">
+    <img src="data:image/png;base64,{image_base64}" alt="Logo">
 </div>
+"""
 
-<script>
-function navigateToSection(section) {
-    // Aquí puedes añadir la lógica para cambiar de pestaña
-    console.log('Navegando a:', section);
-    
-    // Ejemplo: si usas Streamlit con query params
-    const url = new URL(window.location);
-    url.searchParams.set('section', section);
-    window.history.pushState({}, '', url);
-    
-    // O si prefieres scroll a una sección
-    const element = document.getElementById(section);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-    }
-}
 
-// Marcar botón activo según la sección actual
-document.addEventListener('DOMContentLoaded', function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentSection = urlParams.get('section');
+def get_robot_assistant(image_path='assets/robot_asistente.png'):
+    """Genera el HTML del robot asistente que se mueve con el sidebar"""
+    import base64
+    import os
     
-    if (currentSection) {
-        document.querySelectorAll('.circle-button').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        
-        const activeBtn = document.querySelector(`.circle-button[onclick*="${currentSection}"]`);
-        if (activeBtn) {
-            activeBtn.classList.add('active');
-        }
-    }
-});
-</script>
+    image_base64 = None
+    if os.path.exists(image_path):
+        try:
+            with open(image_path, 'rb') as f:
+                image_base64 = base64.b64encode(f.read()).decode()
+        except:
+            pass
+    
+    if not image_base64:
+        image_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
+    
+    return f"""
+<style>
+/* Robot posición por defecto - sidebar abierto (abajo izquierda) */
+.robot-assistant {{
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 80px !important;
+    top: auto !important;
+    right: auto !important;
+    width: 150px !important;
+    height: 150px !important;
+    z-index: 999999 !important;
+    cursor: pointer !important;
+    animation: float-robot 4s ease-in-out infinite !important;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}}
 
-<div class="clients-bar">
-    <div class="clients-title">ALGUNOS DE NUESTROS CLIENTES</div>
-    <div class="clients-logos">
-        <!-- Aquí puedes añadir los logos de tus clientes -->
-        <span style="color: #666; font-weight: 600;">CLIENTE 1</span>
-        <span style="color: #666; font-weight: 600;">CLIENTE 2</span>
-        <span style="color: #666; font-weight: 600;">CLIENTE 3</span>
-        <span style="color: #666; font-weight: 600;">CLIENTE 4</span>
-        <span style="color: #666; font-weight: 600;">CLIENTE 5</span>
-    </div>
+/* Robot cuando sidebar cerrado - arriba derecha */
+body:has([data-testid="collapsedControl"]) .robot-assistant {{
+    top: 80px !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 60px !important;
+}}
+
+.robot-assistant img {{
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 10px 25px rgba(79, 195, 247, 0.4));
+    transition: all 0.4s ease;
+}}
+
+/* Flotación constante */
+@keyframes float-robot {{
+    0%, 100% {{ transform: translateY(0px); }}
+    50% {{ transform: translateY(-15px); }}
+}}
+
+/* Hover */
+.robot-assistant:hover {{
+    transform: scale(1.08) !important;
+}}
+
+.robot-assistant:hover img {{
+    filter: drop-shadow(0 15px 40px rgba(79, 195, 247, 0.6))
+           drop-shadow(0 0 30px rgba(79, 195, 247, 0.4))
+           brightness(1.1);
+    animation: wiggle 2s ease-in-out infinite !important;
+}}
+
+@keyframes wiggle {{
+    0%, 100% {{ transform: rotate(0deg); }}
+    10% {{ transform: rotate(-8deg); }}
+    20% {{ transform: rotate(8deg); }}
+    30% {{ transform: rotate(-8deg); }}
+    40% {{ transform: rotate(8deg); }}
+    50% {{ transform: rotate(-5deg); }}
+    60% {{ transform: rotate(5deg); }}
+    70% {{ transform: rotate(-3deg); }}
+    80% {{ transform: rotate(3deg); }}
+    90% {{ transform: rotate(0deg); }}
+}}
+
+.robot-assistant:active {{
+    transform: scale(1.02) translateY(-5px) !important;
+}}
+
+/* Brillo pulsante */
+.robot-assistant::before {{
+    content: '';
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    background: radial-gradient(circle, rgba(79, 195, 247, 0.2), transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: glow-blue 3s ease-in-out infinite;
+}}
+
+@keyframes glow-blue {{
+    0%, 100% {{ 
+        opacity: 0.3; 
+        transform: translate(-50%, -50%) scale(0.9); 
+    }}
+    50% {{ 
+        opacity: 0.6; 
+        transform: translate(-50%, -50%) scale(1.15); 
+    }}
+}}
+
+/* Burbuja - por defecto a la derecha (sidebar abierto) */
+.robot-assistant::after {{
+    content: '¡Hola! Soy tu Asistente Virtual';
+    position: absolute;
+    top: 50%;
+    left: 165px;
+    right: auto;
+    background: linear-gradient(135deg, rgba(79, 195, 247, 0.95), rgba(79, 195, 247, 0.85));
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 8px 20px rgba(79, 195, 247, 0.4);
+    z-index: 1000000;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0);
+    opacity: 0;
+    transition: all 0.3s ease;
+}}
+
+/* Burbuja a la izquierda cuando sidebar cerrado */
+body:has([data-testid="collapsedControl"]) .robot-assistant::after {{
+    left: auto !important;
+    right: 165px !important;
+}}
+
+/* Mostrar burbuja en hover */
+.robot-assistant:hover::after {{
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
+}}
+</style>
+
+<div class="robot-assistant">
+    <img src="data:image/png;base64,{image_base64}" alt="Robot Asistente">
 </div>
 """
