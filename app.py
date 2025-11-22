@@ -15,7 +15,7 @@ from config.settings import PAGE_CONFIG, TESSERACT_PATHS, SECCIONES
 st.set_page_config(**PAGE_CONFIG)
 
 try:
-    from styles.custom_styles import get_custom_styles, get_robot_assistant
+    from styles.custom_styles import get_custom_styles, get_robot_assistant, get_interpros_logo
 except ImportError as e:
     st.error(f"Error al importar estilos: {e}")
     st.stop()
@@ -46,15 +46,20 @@ st.markdown(get_robot_assistant('assets/robot_asistente.png'), unsafe_allow_html
 # SIDEBAR CON NAVEGACIÓN
 # ============================================================
 with st.sidebar:
+    st.markdown(get_interpros_logo(), unsafe_allow_html=True)
     st.markdown("### SmartMind")
     st.markdown("---")
-    
+
+    if st.button("Captación", key="nav_captacion", use_container_width=True):
+        st.session_state.seccion_actual = "Captación"
+        st.rerun()
+
     if st.button("Inicio", key="nav_inicio", use_container_width=True):
         st.session_state.seccion_actual = "Inicio"
         st.rerun()
-    
-    if st.button("Captación", key="nav_captacion", use_container_width=True):
-        st.session_state.seccion_actual = "Captación"
+
+    if st.button("Fin", key="nav_fin", use_container_width=True):
+        st.session_state.seccion_actual = "Fin"
         st.rerun()
     
     if st.button("Evaluación", key="nav_evaluacion", use_container_width=True):
@@ -65,9 +70,6 @@ with st.sidebar:
         st.session_state.seccion_actual = "Cierre Mes"
         st.rerun()
     
-    if st.button("Fin", key="nav_fin", use_container_width=True):
-        st.session_state.seccion_actual = "Fin"
-        st.rerun()
 
 # ============================================================
 # INICIALIZAR SESSION STATE
