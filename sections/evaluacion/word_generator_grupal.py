@@ -1,10 +1,10 @@
 """
-GENERADOR DE ACTAS MULTIPÁGINA - CON MÓDULOS EN SEGUNDA PÁGINA
-===============================================================
-Versión mejorada que incluye código, nombre y horas de módulos en la segunda página
+GENERADOR DE ACTAS MULTIPÁGINA - DEVUELVE ZIP CUANDO HAY MUCHOS ALUMNOS
+========================================================================
+Versión que retorna ZIP con actas separadas para preservar estructura perfecta
 
 Autor: Sistema de generación de actas
-Versión: 2.0 - Con módulos detallados
+Versión: 2.2 - ZIP con actas separadas (cada una perfecta)
 """
 import io
 import re
@@ -277,18 +277,24 @@ class WordGeneratorActaGrupal:
 
 
 class WordGeneratorMultipaginaDuplicaTodo:
-    """Generador que crea múltiples páginas completas (con módulos y leyenda)"""
+    """
+    Generador que crea múltiples actas SEPARADAS cuando hay >15 alumnos
+    DEVUELVE: Un ZIP con archivos .docx separados (cada uno PERFECTO)
+    """
     
     def __init__(self, plantilla_bytes: bytes):
         self.plantilla_bytes = plantilla_bytes
     
     def generar_acta_grupal(self, datos: Dict) -> bytes:
-        """Genera actas múltiples cuando hay más de 15 alumnos"""
+        """
+        Genera actas múltiples cuando hay más de 15 alumnos
+        RETORNA: ZIP con múltiples .docx si >15 alumnos, o un .docx si <=15
+        """
         
         alumnos = datos.get('alumnos', [])
         total_alumnos = len(alumnos)
         
-        print(f"\n=== Generando Acta Multipágina (Duplica Todo) ===")
+        print(f"\n=== Generando Acta Grupal ===")
         print(f"Total de alumnos: {total_alumnos}")
         
         if total_alumnos <= 15:
@@ -296,80 +302,38 @@ class WordGeneratorMultipaginaDuplicaTodo:
             generador = WordGeneratorActaGrupal(self.plantilla_bytes)
             return generador.generar_acta_grupal(datos)
         
-        # Generar actas separadas COMPLETAS
-        print(f"✓ Generando {(total_alumnos + 14) // 15} actas completas...")
+        # MÁS DE 15 ALUMNOS: Generar múltiples actas en ZIP
+        print(f"✓ Generando {(total_alumnos + 14) // 15} actas separadas en ZIP...")
         
-        actas_bytes = []
-        alumno_idx = 0
-        pagina = 1
+        zip_buffer = io.BytesIO()
         
-        while alumno_idx < total_alumnos:
-            fin_idx = min(alumno_idx + 15, total_alumnos)
-            print(f"  Acta {pagina}: Alumnos {alumno_idx + 1}-{fin_idx} (COMPLETA)")
+        with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+            alumno_idx = 0
+            pagina = 1
             
-            datos_acta = datos.copy()
-            datos_acta['alumnos'] = alumnos[alumno_idx:fin_idx]
-            datos_acta['total_alumnos'] = total_alumnos
-            
-            generador = WordGeneratorActaGrupal(self.plantilla_bytes)
-            acta_bytes = generador.generar_acta_grupal(datos_acta)
-            actas_bytes.append(acta_bytes)
-            
-            alumno_idx = fin_idx
-            pagina += 1
+            while alumno_idx < total_alumnos:
+                fin_idx = min(alumno_idx + 15, total_alumnos)
+                print(f"  Acta {pagina}: Alumnos {alumno_idx + 1}-{fin_idx}")
+                
+                datos_acta = datos.copy()
+                datos_acta['alumnos'] = alumnos[alumno_idx:fin_idx]
+                datos_acta['total_alumnos'] = total_alumnos
+                
+                generador = WordGeneratorActaGrupal(self.plantilla_bytes)
+                acta_bytes = generador.generar_acta_grupal(datos_acta)
+                
+                # Agregar al ZIP
+                curso_codigo = datos.get('curso_codigo', 'CURSO').replace('/', '_')
+                nombre_archivo = f"Acta_Grupal_{curso_codigo}_Parte{pagina}_Alumnos{alumno_idx+1}-{fin_idx}.docx"
+                zf.writestr(nombre_archivo, acta_bytes)
+                print(f"    ✓ {nombre_archivo}")
+                
+                alumno_idx = fin_idx
+                pagina += 1
         
-        print(f"\n✓ Combinando {len(actas_bytes)} actas...")
-        acta_combinada = self._combinar_actas_completas(actas_bytes)
-        
-        print(f"✓ Acta combinada generada")
-        return acta_combinada
-    
-    def _combinar_actas_completas(self, actas_bytes: List[bytes]) -> bytes:
-        """Combina múltiples actas completas en un solo documento"""
-        
-        if len(actas_bytes) == 1:
-            return actas_bytes[0]
-        
-        # Cargar primera acta
-        primera_acta = {}
-        with zipfile.ZipFile(io.BytesIO(actas_bytes[0]), 'r') as z:
-            for item in z.namelist():
-                primera_acta[item] = z.read(item)
-        
-        xml_base = primera_acta['word/document.xml'].decode('utf-8')
-        
-        # Extraer body
-        match_body = re.search(r'<w:body>(.*?)</w:body>', xml_base, re.DOTALL)
-        if not match_body:
-            return actas_bytes[0]
-        
-        contenido_body = match_body.group(1)
-        
-        # Agregar contenido de otras actas
-        for acta_bytes in actas_bytes[1:]:
-            with zipfile.ZipFile(io.BytesIO(acta_bytes), 'r') as z:
-                xml_acta = z.read('word/document.xml').decode('utf-8')
-            
-            match = re.search(r'<w:body>(.*?)</w:body>', xml_acta, re.DOTALL)
-            if match:
-                contenido_acta = match.group(1)
-                salto = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>'
-                contenido_body += salto + contenido_acta
-        
-        # Reconstruir XML
-        xml_combinado = xml_base.replace(match_body.group(1), contenido_body, 1)
-        
-        # Crear DOCX
-        output = io.BytesIO()
-        with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as docx:
-            for nombre, contenido in primera_acta.items():
-                if nombre == 'word/document.xml':
-                    docx.writestr(nombre, xml_combinado.encode('utf-8'))
-                else:
-                    docx.writestr(nombre, contenido)
-        
-        output.seek(0)
-        return output.getvalue()
+        zip_buffer.seek(0)
+        print(f"✓ ZIP con {pagina-1} actas perfectas generado")
+        return zip_buffer.getvalue()
 
 
 # ============================================================

@@ -31,32 +31,52 @@ header, footer, #MainMenu { visibility: hidden; }
 [data-testid="stSidebar"] {
     background: var(--panel-dark) !important;
     border-right: 3px solid var(--holo-blue) !important;
+    padding-top: 0 !important;
 }
 
 [data-testid="stSidebar"] > div:first-child {
     background: var(--panel-dark) !important;
-    padding-top: 2rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* Eliminar padding del contenedor interno */
+[data-testid="stSidebar"] .block-container,
+[data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+    gap: 0 !important;
+}
+
+/* Primer elemento del sidebar sin margen superior */
+[data-testid="stSidebar"] > div > div {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
 }
 
 [data-testid="stSidebar"] h3 {
     font-family: 'Orbitron', sans-serif !important;
     color: var(--holo-blue) !important;
     font-weight: 800 !important;
-    font-size: 1.5rem !important;
+    font-size: 1.2rem !important;
     text-align: center !important;
-    margin-bottom: 1rem !important;
+    margin-top: 0rem !important;
+    margin-bottom: 0.4rem !important;
     text-shadow: 0 0 10px var(--holo-glow);
 }
 
 [data-testid="stSidebar"] hr {
     border-color: var(--holo-blue) !important;
     opacity: 0.3 !important;
+    margin-top: 1rem !important;
+    margin-bottom: 0.4rem !important;
 }
 
 [data-testid="stSidebar"] button {
     background: transparent !important;
     color: var(--text-light) !important;
     font-family: 'Orbitron', sans-serif !important;
+    margin-top: 0.5rem !important;
     font-weight: 600 !important;
     font-size: 1.05rem !important;
     border: 2px solid transparent !important;
@@ -99,6 +119,56 @@ header, footer, #MainMenu { visibility: hidden; }
 }
 
 /* =============================
+   BOTONES - ESTILO UNIFICADO PARA TODA LA APP
+============================= */
+
+/* TODOS los botones - estilo sidebar */
+.stButton > button,
+.main .stButton > button,
+button[kind="primary"],
+button[kind="secondary"],
+.stDownloadButton > button,
+button[data-baseweb="button"] {
+    background: transparent !important;
+    color: var(--text-light) !important;
+    font-family: 'Orbitron', sans-serif !important;
+    font-weight: 600 !important;
+    font-size: 1.05rem !important;
+    border: 2px solid var(--holo-blue) !important;
+    border-radius: 10px !important;
+    padding: 0.75rem 1.5rem !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* Hover para TODOS los botones */
+.stButton > button:hover,
+.main .stButton > button:hover,
+button[kind="primary"]:hover,
+button[kind="secondary"]:hover,
+.stDownloadButton > button:hover,
+button[data-baseweb="button"]:hover {
+    background: rgba(79,195,247,0.15) !important;
+    border-color: var(--holo-blue) !important;
+    color: var(--holo-blue) !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 15px rgba(79,195,247,0.3) !important;
+}
+
+/* Active/Focus para TODOS los botones */
+.stButton > button:active,
+.stButton > button:focus,
+.main .stButton > button:active,
+button[kind="primary"]:active,
+button[kind="secondary"]:active,
+.stDownloadButton > button:active,
+button[data-baseweb="button"]:active {
+    background: rgba(79,195,247,0.25) !important;
+    transform: translateY(0px) !important;
+    box-shadow: 0 4px 20px rgba(79,195,247,0.4) !important;
+}
+
+/* =============================
    TEXTOS VISIBLES
 ============================= */
 p, span, div, label {
@@ -121,10 +191,9 @@ label {
     font-weight: 500 !important;
 }
 
-/* File Uploader - texto oscuro sobre fondo blanco */
-[data-testid="stFileUploader"] {
-    background-color: transparent !important;
-}
+/* =============================
+   FILE UPLOADER - TEXTO OSCURO
+============================= */
 
 /* Label principal - blanco (fuera del cuadro) */
 [data-testid="stFileUploader"] > label {
@@ -171,135 +240,110 @@ label {
 }
 
 /* =============================
-   FORZAR RADIO BUTTONS AZULES
+   TABS - TAB SELECCIONADO MÁS VISIBLE
 ============================= */
 
-/* ELIMINAR TODO EL ROJO */
-[data-testid="stRadio"] [style*="rgb(255, 75, 75)"],
-[data-testid="stRadio"] [style*="#ff4b4b"],
-[data-testid="stRadio"] [style*="red"] {
-    background-color: var(--holo-blue) !important;
-    border-color: var(--holo-blue) !important;
-}
-
-/* Contenedor */
-[data-testid="stRadio"] {
-    background-color: transparent !important;
-}
-
-[data-testid="stRadio"] > div {
-    background-color: transparent !important;
-}
-
-/* Labels - SIEMPRE VISIBLES */
-[data-testid="stRadio"] label {
-    color: var(--text-bright) !important;
-    background-color: transparent !important;
-    display: flex !important;
-    align-items: center !important;
-    gap: 0.5rem !important;
-}
-
-/* Texto del label - blanco por defecto */
-[data-testid="stRadio"] label span {
-    color: var(--text-bright) !important;
-    font-weight: 500 !important;
-}
-
-/* Texto del label cuando está checked - azul */
-[data-testid="stRadio"] label:has(input:checked) span {
-    color: var(--holo-blue) !important;
-}
-
-/* SVG circles (Streamlit usa esto) */
-[data-testid="stRadio"] svg {
-    display: block !important;
-}
-
-[data-testid="stRadio"] svg circle {
-    stroke: white !important;
-    fill: transparent !important;
-}
-
-/* SVG cuando está checked */
-[data-testid="stRadio"] input:checked ~ * svg circle {
-    stroke: var(--holo-blue) !important;
-    fill: var(--holo-blue) !important;
-}
-
-/* Forzar estilos inline rojos a azul */
-[data-testid="stRadio"] [style*="background-color: rgb(255, 75, 75)"],
-[data-testid="stRadio"] [style*="background-color: rgb(255,75,75)"],
-[data-testid="stRadio"] [style*="background-color:#ff4b4b"],
-[data-testid="stRadio"] [style*="background: rgb(255, 75, 75)"] {
-    background-color: var(--holo-blue) !important;
-    background: var(--holo-blue) !important;
-}
-
-/* Input radio nativo */
-[data-testid="stRadio"] input[type="radio"] {
-    accent-color: var(--holo-blue) !important;
-    opacity: 1 !important;
-    width: 20px !important;
-    height: 20px !important;
-}
-
-/* Divs alrededor del input */
-[data-testid="stRadio"] input[type="radio"] + div {
-    display: block !important;
-    opacity: 1 !important;
-}
-
-/* Role radio */
-[data-testid="stRadio"] [role="radio"] {
-    border-color: white !important;
-    display: block !important;
-    opacity: 1 !important;
-}
-
-[data-testid="stRadio"] [role="radio"][aria-checked="true"] {
-    background-color: var(--holo-blue) !important;
-    border-color: var(--holo-blue) !important;
-}
-
-/* Baseweb */
-[data-testid="stRadio"] [data-baseweb="radio"] {
-    display: block !important;
-    opacity: 1 !important;
-}
-
-[data-testid="stRadio"] [data-baseweb="radio"] > div:first-child {
-    border-color: white !important;
-    background-color: transparent !important;
-}
-
-[data-testid="stRadio"] [data-baseweb="radio"][aria-checked="true"] > div:first-child {
-    background-color: var(--holo-blue) !important;
-    border-color: var(--holo-blue) !important;
-}
-
-/* =============================
-   TABS AZUL
-============================= */
+/* Tabs normales (no seleccionados) */
 button[data-baseweb="tab"] {
+    color: rgba(255, 255, 255, 0.6) !important;
+    font-weight: 500 !important;
+    border-bottom: 3px solid transparent !important;
+    transition: all 0.3s ease !important;
+}
+
+button[data-baseweb="tab"]:hover {
     color: var(--text-bright) !important;
+    border-bottom-color: rgba(79, 195, 247, 0.5) !important;
 }
 
+/* Tab seleccionado - MUY VISIBLE */
 button[data-baseweb="tab"][aria-selected="true"] {
-    border-bottom-color: var(--holo-blue) !important;
     color: var(--holo-blue) !important;
+    font-weight: 700 !important;
+    border-bottom: 3px solid var(--holo-blue) !important;
+    background: rgba(79, 195, 247, 0.1) !important;
 }
 
-.stTabs [data-baseweb="tab-highlight"],
-.stTabs [data-baseweb="tab-border"] {
+/* Línea indicadora del tab */
+.stTabs [data-baseweb="tab-highlight"] {
     background-color: var(--holo-blue) !important;
+    height: 3px !important;
+}
+
+.stTabs [data-baseweb="tab-border"] {
+    background-color: rgba(79, 195, 247, 0.3) !important;
+}
+
+/* Contenedor de tabs */
+[data-baseweb="tab-list"] {
+    gap: 0 !important;
+}
+
+button[data-baseweb="tab"] {
+    padding: 0.75rem 1.5rem !important;
 }
 </style>
 """
 
 
+def get_interpros_logo(image_path='assets/logo.png'):
+    """Genera el HTML del logo de INTERPROS - VERSIÓN MINI"""
+    import base64
+    import os
+    
+    # Intentar múltiples ubicaciones
+    ubicaciones = [
+        image_path,
+        os.path.join(os.getcwd(), 'assets', 'logo.png'),
+        os.path.join(os.path.dirname(__file__), '..', 'assets', 'logo.png'),
+    ]
+    
+    image_base64 = None
+    for ubicacion in ubicaciones:
+        if os.path.exists(ubicacion):
+            try:
+                with open(ubicacion, 'rb') as f:
+                    image_base64 = base64.b64encode(f.read()).decode()
+                print(f"✓ Logo cargado desde: {ubicacion}")
+                break
+            except Exception as e:
+                print(f"Error cargando {ubicacion}: {e}")
+                continue
+    
+    if not image_base64:
+        print("⚠ No se encontró el logo en ninguna ubicación")
+        return ""
+    
+    return f"""
+<style>
+.interpros-logo {{
+    text-align: center;
+    margin: 0;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    padding: 0;
+    line-height: 0;
+}}
+
+.interpros-logo img {{
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: white;
+    padding: 10px;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+}}
+</style>
+<div class="interpros-logo">
+    <img src="data:image/png;base64,{image_base64}" alt="Logo">
+</div>
+"""
+
+
 def get_robot_assistant(image_path='assets/robot_asistente.png'):
-    """Genera el HTML del robot asistente"""
+    """Genera el HTML del robot asistente que se mueve con el sidebar"""
     import base64
     import os
     
@@ -316,16 +360,27 @@ def get_robot_assistant(image_path='assets/robot_asistente.png'):
     
     return f"""
 <style>
+/* Robot posición por defecto - sidebar abierto (abajo izquierda) */
 .robot-assistant {{
     position: fixed !important;
     bottom: 20px !important;
-    left: 20px !important;
+    left: 80px !important;
+    top: auto !important;
+    right: auto !important;
     width: 150px !important;
     height: 150px !important;
     z-index: 999999 !important;
     cursor: pointer !important;
     animation: float-robot 4s ease-in-out infinite !important;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}}
+
+/* Robot cuando sidebar cerrado - arriba derecha */
+body:has([data-testid="collapsedControl"]) .robot-assistant {{
+    top: 80px !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: 60px !important;
 }}
 
 .robot-assistant img {{
@@ -336,52 +391,104 @@ def get_robot_assistant(image_path='assets/robot_asistente.png'):
     transition: all 0.4s ease;
 }}
 
+/* Flotación constante */
 @keyframes float-robot {{
-    0%, 100% {{ transform: translateY(0px) rotate(0deg); }}
-    50% {{ transform: translateY(-20px) rotate(2deg); }}
+    0%, 100% {{ transform: translateY(0px); }}
+    50% {{ transform: translateY(-15px); }}
 }}
 
+/* Hover */
 .robot-assistant:hover {{
-    transform: scale(1.15) !important;
+    transform: scale(1.08) !important;
 }}
 
 .robot-assistant:hover img {{
     filter: drop-shadow(0 15px 40px rgba(79, 195, 247, 0.6))
            drop-shadow(0 0 30px rgba(79, 195, 247, 0.4))
            brightness(1.1);
-    animation: wiggle 0.5s ease !important;
+    animation: wiggle 2s ease-in-out infinite !important;
 }}
 
 @keyframes wiggle {{
     0%, 100% {{ transform: rotate(0deg); }}
-    25% {{ transform: rotate(-5deg); }}
-    75% {{ transform: rotate(5deg); }}
+    10% {{ transform: rotate(-8deg); }}
+    20% {{ transform: rotate(8deg); }}
+    30% {{ transform: rotate(-8deg); }}
+    40% {{ transform: rotate(8deg); }}
+    50% {{ transform: rotate(-5deg); }}
+    60% {{ transform: rotate(5deg); }}
+    70% {{ transform: rotate(-3deg); }}
+    80% {{ transform: rotate(3deg); }}
+    90% {{ transform: rotate(0deg); }}
 }}
 
 .robot-assistant:active {{
-    transform: scale(1.05) translateY(-10px) !important;
+    transform: scale(1.02) translateY(-5px) !important;
 }}
 
+/* Brillo pulsante */
 .robot-assistant::before {{
     content: '';
     position: absolute;
     width: 180px;
     height: 180px;
     background: radial-gradient(circle, rgba(79, 195, 247, 0.2), transparent 70%);
-    top: -15px;
-    left: -15px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     border-radius: 50%;
     z-index: -1;
     animation: glow-blue 3s ease-in-out infinite;
 }}
 
 @keyframes glow-blue {{
-    0%, 100% {{ opacity: 0.3; transform: scale(0.9); }}
-    50% {{ opacity: 0.6; transform: scale(1.15); }}
+    0%, 100% {{ 
+        opacity: 0.3; 
+        transform: translate(-50%, -50%) scale(0.9); 
+    }}
+    50% {{ 
+        opacity: 0.6; 
+        transform: translate(-50%, -50%) scale(1.15); 
+    }}
+}}
+
+/* Burbuja - por defecto a la derecha (sidebar abierto) */
+.robot-assistant::after {{
+    content: '¡Hola! Soy tu Asistente Virtual';
+    position: absolute;
+    top: 50%;
+    left: 165px;
+    right: auto;
+    background: linear-gradient(135deg, rgba(79, 195, 247, 0.95), rgba(79, 195, 247, 0.85));
+    color: white;
+    padding: 12px 20px;
+    border-radius: 20px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    box-shadow: 0 8px 20px rgba(79, 195, 247, 0.4);
+    z-index: 1000000;
+    pointer-events: none;
+    transform: translateY(-50%) scale(0);
+    opacity: 0;
+    transition: all 0.3s ease;
+}}
+
+/* Burbuja a la izquierda cuando sidebar cerrado */
+body:has([data-testid="collapsedControl"]) .robot-assistant::after {{
+    left: auto !important;
+    right: 165px !important;
+}}
+
+/* Mostrar burbuja en hover */
+.robot-assistant:hover::after {{
+    transform: translateY(-50%) scale(1);
+    opacity: 1;
 }}
 </style>
 
-<div class="robot-assistant" title="¡Hola! Soy tu asistente SmartMind 🤖✨">
+<div class="robot-assistant">
     <img src="data:image/png;base64,{image_base64}" alt="Robot Asistente">
 </div>
 """
