@@ -36,15 +36,10 @@ if platform.system() == 'Windows':
             pytesseract.pytesseract.tesseract_cmd = ruta
             break
 
-# Aplicar estilos
 st.markdown(get_custom_styles(), unsafe_allow_html=True)
 
-# Renderizar robot asistente con imagen
 st.markdown(get_robot_assistant('assets/robot_asistente.png'), unsafe_allow_html=True)
 
-# ============================================================
-# SIDEBAR CON NAVEGACIÓN
-# ============================================================
 with st.sidebar:
     st.markdown(get_interpros_logo(), unsafe_allow_html=True)
     st.markdown("### SmartMind")
@@ -69,20 +64,12 @@ with st.sidebar:
     if st.button("Cierre Mes", key="nav_cierre", use_container_width=True):
         st.session_state.seccion_actual = "Cierre Mes"
         st.rerun()
-    
 
-# ============================================================
-# INICIALIZAR SESSION STATE
-# ============================================================
 if 'seccion_actual' not in st.session_state:
     st.session_state.seccion_actual = 'Inicio'
 
-# ============================================================
-# CONTENIDO PRINCIPAL
-# ============================================================
 seccion_actual = st.session_state.seccion_actual
 
-# Título de la sección
 st.markdown(f"""
 <div style="margin-bottom: 2rem;">
     <h1 style="font-size: 2rem; color: white; font-weight: 700; margin: 0;">
@@ -94,7 +81,6 @@ st.markdown(f"""
 </div>
 """, unsafe_allow_html=True)
 
-# Renderizar sección actual
 if seccion_actual == "Captación":
     render_captacion()
 elif seccion_actual == "Inicio":

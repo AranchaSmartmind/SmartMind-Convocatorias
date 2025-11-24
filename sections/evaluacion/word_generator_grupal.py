@@ -39,9 +39,8 @@ class WordGeneratorActaGrupal:
     def _rellenar_campos_simple(self, xml: str, datos: Dict) -> str:
         """Rellena campos manteniendo estructura XML válida"""
         
-        alumnos = datos.get('alumnos', [])[:15]  # Máximo 15 alumnos
+        alumnos = datos.get('alumnos', [])[:15]
         
-        # Preparar valores (247 campos) - AHORA INCLUYE MÓDULOS EN SEGUNDA PÁGINA
         valores = self._preparar_valores_correctos(datos, alumnos)
         
         print(f"\n=== Procesando Acta Grupal ===")
@@ -84,7 +83,6 @@ class WordGeneratorActaGrupal:
             else:
                 formato_original = '<w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="20"/>'
             
-            # Ajustar tamaño para nombres largos
             campos_nombres = [23, 36, 49, 62, 75, 88, 101, 114, 127, 140, 153, 166, 179, 192, 205]
             
             if campo_actual in campos_nombres and len(valor) > 25:
@@ -142,11 +140,10 @@ class WordGeneratorActaGrupal:
         
         valores = []
         
-        # CAMPOS 1-13: Encabezado del acta
         valores.extend([
             datos.get('fecha_inicio', '20/03/2025'),
             datos.get('fecha_fin', '27/06/2025'),
-            '',  # Campo 3: Número de expediente (vacío)
+            '',
             datos.get('curso_nombre', ''),
             datos.get('codigo_certificado', ''),
             datos.get('nivel', ''),
@@ -159,17 +156,14 @@ class WordGeneratorActaGrupal:
             'asturias@smartmind.net',
         ])
         
-        # CAMPOS 14-21: Nombres de módulos (8 módulos máximo) - PRIMERA PÁGINA
         modulos_nombres = [mod['nombre'] for mod in datos.get('modulos_info', [])]
         for i in range(8):
             valores.append(modulos_nombres[i] if i < len(modulos_nombres) else '')
         
-        # CAMPOS 22-216: Datos de 15 alumnos (13 campos por alumno)
         for i in range(15):
             if i < len(alumnos):
                 alumno = alumnos[i]
                 
-                # Obtener calificaciones de los primeros 3 módulos
                 mod1 = self._obtener_calificacion_modulo(alumno, 0) or 'NS-0'
                 mod2 = self._obtener_calificacion_modulo(alumno, 1) or 'NS-0'
                 mod3 = self._obtener_calificacion_modulo(alumno, 2) or 'NS-0'
@@ -190,34 +184,25 @@ class WordGeneratorActaGrupal:
                     '',
                 ])
             else:
-                # Alumno vacío
                 valores.extend([''] * 13)
-        
-        # CAMPO 217: Vacío
+
         valores.append('')
-        
-        # CAMPO 218: TOTAL de alumnos
         total_alumnos = datos.get('total_alumnos', len(datos.get('alumnos', [])))
         valores.append(str(total_alumnos))
-        
-        # ============================================================
-        # CAMPOS 219-247: MÓDULOS DETALLADOS EN SEGUNDA PÁGINA (29 campos)
-        # ============================================================
         modulos_detalle = datos.get('modulos_detalle', [])
         
-        # Campos 219-227: Información de los 3 módulos (3 campos por módulo)
+
         for i in range(3):
             if i < len(modulos_detalle):
                 modulo = modulos_detalle[i]
                 valores.extend([
-                    modulo.get('codigo', ''),      # Código: MF0969_1
-                    modulo.get('nombre', ''),      # Nombre: Técnicas administrativas...
-                    str(modulo.get('horas', '')),  # Horas: 150
+                    modulo.get('codigo', ''),
+                    modulo.get('nombre', ''),
+                    str(modulo.get('horas', '')),
                 ])
             else:
-                valores.extend(['', '', ''])  # Módulo vacío
-        
-        # Campos 228-247: Campos adicionales (20 campos) - Por ahora vacíos
+                valores.extend(['', '', ''])
+
         valores.extend([''] * 20)
         
         print(f"  → Módulos detalle agregados: {len(modulos_detalle)}")
@@ -302,7 +287,6 @@ class WordGeneratorMultipaginaDuplicaTodo:
             generador = WordGeneratorActaGrupal(self.plantilla_bytes)
             return generador.generar_acta_grupal(datos)
         
-        # MÁS DE 15 ALUMNOS: Generar múltiples actas en ZIP
         print(f"✓ Generando {(total_alumnos + 14) // 15} actas separadas en ZIP...")
         
         zip_buffer = io.BytesIO()
@@ -321,8 +305,7 @@ class WordGeneratorMultipaginaDuplicaTodo:
                 
                 generador = WordGeneratorActaGrupal(self.plantilla_bytes)
                 acta_bytes = generador.generar_acta_grupal(datos_acta)
-                
-                # Agregar al ZIP
+            
                 curso_codigo = datos.get('curso_codigo', 'CURSO').replace('/', '_')
                 nombre_archivo = f"Acta_Grupal_{curso_codigo}_Parte{pagina}_Alumnos{alumno_idx+1}-{fin_idx}.docx"
                 zf.writestr(nombre_archivo, acta_bytes)
@@ -335,11 +318,6 @@ class WordGeneratorMultipaginaDuplicaTodo:
         print(f"✓ ZIP con {pagina-1} actas perfectas generado")
         return zip_buffer.getvalue()
 
-
-# ============================================================
-# FUNCIÓN AUXILIAR PARA EXTRAER MÓDULOS DEL CRONOGRAMA
-# ============================================================
-
 def extraer_modulos_de_cronograma(archivo) -> List[Dict]:
     """
     Extrae información de módulos del archivo Cronograma.
@@ -349,11 +327,9 @@ def extraer_modulos_de_cronograma(archivo) -> List[Dict]:
     import io
 
     try:
-        # Si es un UploadedFile de Streamlit → usamos archivo.read()
         if hasattr(archivo, "read"):
             df = pd.read_excel(io.BytesIO(archivo.read()), sheet_name='Calculos_UF', header=None)
         else:
-            # Ruta en disco tradicional
             df = pd.read_excel(archivo, sheet_name='Calculos_UF', header=None)
 
         modulos = []

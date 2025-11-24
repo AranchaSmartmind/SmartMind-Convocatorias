@@ -11,7 +11,6 @@ def render_captacion():
     
     st.info("Esta funcionalidad estará disponible próximamente.")
     
-    # Estructura futura
     st.markdown("""
     #### Documentos que se procesarán:
     - Solicitudes de inscripción

@@ -3,7 +3,6 @@ Script para crear la estructura completa del proyecto
 """
 import os
 
-# Definir estructura
 estructura = {
     "config": ["__init__.py", "settings.py"],
     "styles": ["__init__.py", "custom_styles.py"],
@@ -15,30 +14,27 @@ estructura = {
 
 def crear_estructura():
     """Crea toda la estructura de carpetas y archivos"""
-    
-    # Crear carpetas
+
     for carpeta in estructura.keys():
         os.makedirs(carpeta, exist_ok=True)
-        print(f"✓ Carpeta '{carpeta}' creada/verificada")
-    
-    # Crear archivos
+        print(f" Carpeta '{carpeta}' creada/verificada")
+
     for carpeta, archivos in estructura.items():
         for archivo in archivos:
             ruta = os.path.join(carpeta, archivo)
             if not os.path.exists(ruta):
                 with open(ruta, 'w', encoding='utf-8') as f:
                     f.write(f'"""\n{archivo}\n"""\n')
-                print(f"✓ Archivo '{ruta}' creado")
+                print(f" Archivo '{ruta}' creado")
             else:
                 print(f"  Archivo '{ruta}' ya existe")
-    
-    # Crear archivos raíz si no existen
+
     archivos_raiz = ["app.py", "requirements.txt", "README.md", ".gitignore"]
     for archivo in archivos_raiz:
         if not os.path.exists(archivo):
             with open(archivo, 'w', encoding='utf-8') as f:
                 f.write(f'# {archivo}\n')
-            print(f"✓ Archivo '{archivo}' creado")
+            print(f" Archivo '{archivo}' creado")
     
     print("\n¡Estructura creada exitosamente!")
 

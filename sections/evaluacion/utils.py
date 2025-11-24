@@ -8,11 +8,6 @@ from datetime import datetime
 from docx import Document
 from docx.shared import Pt, Inches
 
-
-# ============================================================================
-# FUNCIONES PARA DESEMPLEADOS - ACTAS INDIVIDUALES
-# ============================================================================
-
 def procesar_cronograma_desempleados(archivo_excel):
     """
     Procesa el archivo Excel de cronograma para desempleados
@@ -27,9 +22,7 @@ def procesar_cronograma_desempleados(archivo_excel):
     """
     try:
         df = pd.read_excel(archivo_excel)
-        
-        # Aquí se implementará la extracción de datos según la estructura real
-        # Por ahora retornamos un ejemplo de estructura
+
         datos_cronograma = {
             'fecha_inicio': None,
             'fecha_fin': None,
@@ -59,8 +52,7 @@ def procesar_asistencias_desempleados(archivo_excel):
     """
     try:
         df = pd.read_excel(archivo_excel)
-        
-        # Aquí se implementará la extracción de datos según la estructura real
+
         datos_asistencias = {
             'alumnos': [],
             'porcentajes_asistencia': {},
@@ -91,18 +83,11 @@ def generar_acta_individual_desempleados(plantilla_word, datos_cronograma, datos
     try:
         documentos_generados = []
         
-        # Por cada alumno, generar un acta individual
-        # TODO: Implementar la lógica de generación
-        
         return documentos_generados
         
     except Exception as e:
         raise Exception(f"Error al generar actas individuales: {str(e)}")
 
-
-# ============================================================================
-# FUNCIONES PARA DESEMPLEADOS - ACTAS TRANSVERSALES
-# ============================================================================
 
 def generar_acta_transversal_desempleados(plantilla_word, datos_cronograma, datos_asistencias):
     """
@@ -119,7 +104,6 @@ def generar_acta_transversal_desempleados(plantilla_word, datos_cronograma, dato
     TODO: Implementar según los campos de la plantilla
     """
     try:
-        # TODO: Implementar la lógica de generación del acta transversal
         doc = Document(plantilla_word)
         
         return doc
@@ -127,10 +111,6 @@ def generar_acta_transversal_desempleados(plantilla_word, datos_cronograma, dato
     except Exception as e:
         raise Exception(f"Error al generar acta transversal: {str(e)}")
 
-
-# ============================================================================
-# FUNCIONES PARA OCUPADOS - ACTAS INDIVIDUALES
-# ============================================================================
 
 def procesar_cronograma_ocupados(archivo_excel):
     """
@@ -147,8 +127,6 @@ def procesar_cronograma_ocupados(archivo_excel):
     try:
         df = pd.read_excel(archivo_excel)
         
-        # Aquí se implementará la extracción de datos según la estructura real
-        # Por ahora retornamos un ejemplo de estructura
         datos_cronograma = {
             'fecha_inicio': None,
             'fecha_fin': None,
@@ -179,7 +157,6 @@ def procesar_asistencias_ocupados(archivo_excel):
     try:
         df = pd.read_excel(archivo_excel)
         
-        # Aquí se implementará la extracción de datos según la estructura real
         datos_asistencias = {
             'alumnos': [],
             'porcentajes_asistencia': {},
@@ -210,18 +187,10 @@ def generar_acta_individual_ocupados(plantilla_word, datos_cronograma, datos_asi
     try:
         documentos_generados = []
         
-        # Por cada alumno, generar un acta individual
-        # TODO: Implementar la lógica de generación
-        
         return documentos_generados
         
     except Exception as e:
         raise Exception(f"Error al generar actas individuales: {str(e)}")
-
-
-# ============================================================================
-# FUNCIONES PARA OCUPADOS - ACTA CERTIFICACIÓN
-# ============================================================================
 
 def generar_acta_certificacion_ocupados(plantilla_word, datos_cronograma, datos_asistencias):
     """
@@ -238,18 +207,12 @@ def generar_acta_certificacion_ocupados(plantilla_word, datos_cronograma, datos_
     TODO: Implementar según los campos de la plantilla
     """
     try:
-        # TODO: Implementar la lógica de generación del acta transversal
         doc = Document(plantilla_word)
         
         return doc
         
     except Exception as e:
         raise Exception(f"Error al generar acta transversal: {str(e)}")
-    
-    
-# ============================================================================
-# FUNCIONES AUXILIARES GENERALES
-# ============================================================================
 
 def calcular_porcentaje_asistencia(asistencias_alumno, total_sesiones):
     """
@@ -299,14 +262,12 @@ def reemplazar_marcadores_word(doc, datos):
     Returns:
         Document: Documento con los marcadores reemplazados
     """
-    # Reemplazar en párrafos
     for paragraph in doc.paragraphs:
         for key, value in datos.items():
             marcador = f"{{{{{key}}}}}"
             if marcador in paragraph.text:
                 paragraph.text = paragraph.text.replace(marcador, str(value))
     
-    # Reemplazar en tablas
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:

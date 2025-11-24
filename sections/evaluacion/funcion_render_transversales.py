@@ -4,16 +4,16 @@ FUNCIÓN RENDER_TRANSVERSALES COMPLETA
 Esta función reemplaza el render_transversales actual en desempleados.py
 """
 
-import streamlit as st # type: ignore
-import pandas as pd # type: ignore
+import streamlit as st
+import pandas as pd
+
+from sections.evaluacion.desempleados import cargar_plantilla_transversal_por_defecto
 
 def render_transversales():
     """Render para actas transversales (FCOO03)"""
     
-    st.markdown("### 📚 Actas Transversales (FCOO03)")
+    st.markdown("### Actas Transversales (FCOO03)")
     st.markdown("Genera actas de evaluación final para competencias transversales")
-    
-    # Subida de archivos
     st.markdown("### Archivos")
     
     col1, col2, col3 = st.columns(3)
@@ -26,9 +26,9 @@ def render_transversales():
             type=['xlsx', 'xls']
         )
         if cronograma_file:
-            st.success("✅ Cargado")
+            st.success(" Cargado")
         else:
-            st.warning("⚠️ Requerido")
+            st.warning(" Requerido")
     
     with col2:
         st.markdown("**Control de Tareas**")
@@ -38,9 +38,9 @@ def render_transversales():
             type=['xlsx', 'xls']
         )
         if control_file:
-            st.success("✅ Cargado")
+            st.success(" Cargado")
         else:
-            st.warning("⚠️ Requerido")
+            st.warning(" Requerido")
     
     with col3:
         st.markdown("**Plantilla (Opcional)**")
@@ -51,11 +51,11 @@ def render_transversales():
             help="Si no subes ninguna, se usará la plantilla oficial SEPE predeterminada"
         )
         if plantilla_file:
-            st.success("✅ Personalizada")
+            st.success(" Personalizada")
         else:
-            st.info("ℹ️ Por defecto")
+            st.info(" Por defecto")
     
-    with st.expander("ℹ️ Información", expanded=False):
+    with st.expander(" Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
         
@@ -78,29 +78,25 @@ def render_transversales():
         """)
     
     if not cronograma_file or not control_file:
-        st.info("📤 Sube el cronograma y control de tareas para continuar")
+        st.info(" Sube el cronograma y control de tareas para continuar")
         return
     
     st.markdown("---")
     
     try:
-        with st.spinner('⚙️ Procesando archivos...'):
-            # Importar procesador
+        with st.spinner(' Procesando archivos...'):
             from transversales_processor import TransversalesProcessor
             
-            # Procesar datos
             processor = TransversalesProcessor()
             cronograma_file.seek(0)
             control_file.seek(0)
             datos = processor.cargar_datos(control_file.read(), cronograma_file.read())
         
-        st.success("✅ Datos procesados correctamente")
-        
-        # Mostrar resumen
+        st.success(" Datos procesados correctamente")
         st.markdown("### Resumen del Curso")
         
         with st.expander("Ver datos extraídos", expanded=True):
-            # Métricas
+
             col1, col2, col3, col4 = st.columns(4)
             
             with col1:
@@ -119,7 +115,6 @@ def render_transversales():
             
             st.markdown("---")
             
-            # Información del curso
             st.markdown("**Información del Curso**")
             col1, col2 = st.columns(2)
             with col1:
@@ -133,7 +128,6 @@ def render_transversales():
             
             st.markdown("---")
             
-            # Tabla de alumnos
             st.markdown("**Listado de Alumnos**")
             df = pd.DataFrame([{
                 'Nº': a['numero'],
@@ -145,54 +139,49 @@ def render_transversales():
             
             st.dataframe(df, use_container_width=True, hide_index=True)
         
-        # Generar acta
         st.markdown("---")
         st.markdown("### Generar Acta Transversal")
         
-        if st.button("🚀 Generar Acta Transversal (FCOO03)", 
+        if st.button(" Generar Acta Transversal (FCOO03)", 
                     type="primary", 
                     use_container_width=True,
                     key="desempleados_transversal_generar"):
             try:
-                # Obtener plantilla
                 if plantilla_file:
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
-                    st.info("📝 Usando plantilla personalizada")
+                    st.info(" Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_transversal_por_defecto()
                     if plantilla_bytes:
-                        st.info("📝 Usando plantilla oficial SEPE predeterminada")
+                        st.info(" Usando plantilla oficial SEPE predeterminada")
                     else:
-                        st.error("❌ No se encontró la plantilla predeterminada")
-                        st.warning("⚠️ Sube una plantilla manualmente")
+                        st.error(" No se encontró la plantilla predeterminada")
+                        st.warning(" Sube una plantilla manualmente")
                         return
                 
-                # Generar acta
-                with st.spinner('⚙️ Generando acta transversal...'):
+                with st.spinner(' Generando acta transversal...'):
                     from word_generator_transversal import WordGeneratorTransversal
                     
                     gen = WordGeneratorTransversal(plantilla_bytes)
                     doc = gen.generar_acta(datos)
                     
-                    # Guardar en session state
                     st.session_state['acta_transversal_desempleados'] = doc
                     st.session_state['nombre_acta_transversal_desempleados'] = f"Acta_Transversal_FCOO03_{datos['campo_2_accion'].replace('/', '_')}.docx"
                 
                 st.balloons()
-                st.success("✅ ¡Acta transversal generada correctamente!")
+                st.success(" ¡Acta transversal generada correctamente!")
                 
             except Exception as e:
-                st.error(f"❌ Error generando acta: {str(e)}")
+                st.error(f" Error generando acta: {str(e)}")
                 st.exception(e)
         
-        # Descarga
         if 'acta_transversal_desempleados' in st.session_state:
             st.markdown("---")
             st.markdown("### Descargar")
             
             st.download_button(
-                label="💾 Descargar Acta Transversal",
+                label=" Descargar Acta Transversal",
                 data=st.session_state['acta_transversal_desempleados'],
                 file_name=st.session_state['nombre_acta_transversal_desempleados'],
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -202,5 +191,5 @@ def render_transversales():
             )
     
     except Exception as e:
-        st.error(f"❌ Error procesando archivos: {str(e)}")
+        st.error(f" Error procesando archivos: {str(e)}")
         st.exception(e)
