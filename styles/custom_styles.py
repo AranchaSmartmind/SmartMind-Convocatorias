@@ -271,14 +271,14 @@ def get_interpros_logo(image_path='assets/logo.png'):
             try:
                 with open(ubicacion, 'rb') as f:
                     image_base64 = base64.b64encode(f.read()).decode()
-                print(f"✓ Logo cargado desde: {ubicacion}")
+                print(f" Logo cargado desde: {ubicacion}")
                 break
             except Exception as e:
                 print(f"Error cargando {ubicacion}: {e}")
                 continue
     
     if not image_base64:
-        print("⚠ No se encontró el logo en ninguna ubicación")
+        print(" No se encontró el logo en ninguna ubicación")
         return ""
     
     return f"""
@@ -451,3 +451,4 @@ body:has([data-testid="collapsedControl"]) .robot-assistant::after {{
     <img src="data:image/png;base64,{image_base64}" alt="Robot Asistente">
 </div>
 """
+
