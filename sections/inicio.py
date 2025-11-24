@@ -10,8 +10,7 @@ def render_inicio():
     st.markdown('<div class="custom-card"><p>Sección en desarrollo para la gestión de documentos de inicio de formación.</p></div>', unsafe_allow_html=True)
     
     st.info("Esta funcionalidad estará disponible próximamente.")
-    
-    # Estructura futura
+
     st.markdown("""
     #### Documentos que se procesarán:
     - Acuerdos de formación en empresa

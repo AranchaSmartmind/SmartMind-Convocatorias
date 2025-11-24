@@ -36,24 +36,13 @@ def render_tab_ocupados():
     """Renderiza el tab de Ocupados"""
     st.markdown("#### Actas para Formación de Ocupados")
     st.markdown('<div class="custom-card"><p>Gestión de actas individuales, grupales y certificaciones para formación de trabajadores ocupados.</p></div>', unsafe_allow_html=True)
-    
-    # Implementación del tab de ocupados
-    # ... (código del tab ocupados)
-
 
 def render_tab_desempleados():
     """Renderiza el tab de Desempleados"""
     st.markdown("#### Actas para Formación de Desempleados")
     st.markdown('<div class="custom-card"><p>Gestión de actas individuales, grupales y transversales para formación de desempleados.</p></div>', unsafe_allow_html=True)
-    
-    # Implementación del tab de desempleados
-    # ... (código del tab desempleados)
-
 
 def render_tab_gforma():
     """Renderiza el tab de GFORMA"""
     st.markdown("#### Generación de Excel para Importación en GFORMA")
     st.markdown('<div class="custom-card"><p>Genera un archivo Excel con formato compatible para importar directamente en la plataforma GFORMA.</p></div>', unsafe_allow_html=True)
-    
-    # Implementación del tab de GFORMA
-    # ... (código del tab GFORMA)

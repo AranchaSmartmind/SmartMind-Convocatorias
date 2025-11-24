@@ -21,7 +21,6 @@ class WordGeneratorTransversal:
         """
         self.plantilla_bytes = plantilla_bytes
         
-        # Cargar estructura de la plantilla
         self.plantilla_parts = {}
         with zipfile.ZipFile(BytesIO(plantilla_bytes), 'r') as zf:
             for item in zf.namelist():
@@ -37,16 +36,14 @@ class WordGeneratorTransversal:
         Returns:
             bytes: Documento Word generado
         """
-        # Preparar valores para los 92 campos
+
         valores = self._preparar_valores(datos)
         
-        print(f"\n📝 Generando acta transversal con {len(valores)} campos")
+        print(f"\n Generando acta transversal con {len(valores)} campos")
         
-        # Rellenar campos en el XML
         xml_content = self.plantilla_parts['word/document.xml'].decode('utf-8')
         xml_modificado = self._rellenar_campos(xml_content, valores)
         
-        # Crear documento final
         output = BytesIO()
         with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as docx:
             for nombre, contenido in self.plantilla_parts.items():
@@ -56,7 +53,7 @@ class WordGeneratorTransversal:
                     docx.writestr(nombre, contenido)
         
         output.seek(0)
-        print("✅ Acta transversal generada correctamente")
+        print(" Acta transversal generada correctamente")
         
         return output.getvalue()
     
@@ -78,46 +75,37 @@ class WordGeneratorTransversal:
         """
         valores = []
         
-        # ============================================================
-        # CAMPOS 1-10: ENCABEZADO
-        # ============================================================
-        valores.append(datos.get('campo_1_convocatoria', ''))  # 1: Convocatoria
-        valores.append(datos.get('campo_2_accion', ''))        # 2: Acción
-        valores.append(datos.get('campo_3_especialidad', ''))  # 3: Especialidad
-        valores.append(datos.get('campo_4_codigo', ''))        # 4: Código
-        valores.append(datos.get('campo_5_centro', ''))        # 5: Centro
-        valores.append(datos.get('campo_6_duracion', ''))      # 6: Duración
-        valores.append(datos.get('campo_7_actividades', ''))   # 7: Actividades totales
-        valores.append(datos.get('campo_8_modalidad', ''))     # 8: Modalidad
-        valores.append(datos.get('campo_9_fecha_inicio', ''))  # 9: Fecha inicio
-        valores.append(datos.get('campo_10_fecha_fin', ''))    # 10: Fecha fin
-        
-        # ============================================================
-        # CAMPOS 11-90: TABLA DE ALUMNOS (20 alumnos × 4 campos = 80)
-        # ============================================================
+        valores.append(datos.get('campo_1_convocatoria', ''))
+        valores.append(datos.get('campo_2_accion', ''))
+        valores.append(datos.get('campo_3_especialidad', ''))
+        valores.append(datos.get('campo_4_codigo', ''))
+        valores.append(datos.get('campo_5_centro', ''))
+        valores.append(datos.get('campo_6_duracion', ''))
+        valores.append(datos.get('campo_7_actividades', ''))
+        valores.append(datos.get('campo_8_modalidad', ''))
+        valores.append(datos.get('campo_9_fecha_inicio', ''))
+        valores.append(datos.get('campo_10_fecha_fin', ''))
+
         alumnos = datos.get('alumnos', [])
         
-        for i in range(20):  # Máximo 20 alumnos
+        for i in range(20):
             if i < len(alumnos):
                 alumno = alumnos[i]
-                # 4 campos por alumno: DNI, Nombre, Horas, Calificación
-                valores.append(str(alumno.get('dni', '')))                  # DNI
-                valores.append(str(alumno.get('nombre', '')))               # Nombre
-                valores.append(str(alumno.get('horas_actividades', '')))   # Horas
-                valores.append(str(alumno.get('calificacion_final', '')))  # Calificación
+
+                valores.append(str(alumno.get('dni', '')))
+                valores.append(str(alumno.get('nombre', '')))
+                valores.append(str(alumno.get('horas_actividades', '')))
+                valores.append(str(alumno.get('calificacion_final', '')))
             else:
-                # Alumno vacío
+
                 valores.extend(['', '', '', ''])
+
+        valores.append('')
+        valores.append('')
         
-        # ============================================================
-        # CAMPOS 91-92: FIRMAS (vacías por defecto)
-        # ============================================================
-        valores.append('')  # 91: Responsable
-        valores.append('')  # 92: Formador/a
-        
-        print(f"  ✓ Campos preparados: {len(valores)}")
-        print(f"  ✓ Alumnos incluidos: {len(alumnos)}")
-        print(f"  ✓ Estructura: 4 campos/alumno (DNI, Nombre, Horas, Calif)")
+        print(f"   Campos preparados: {len(valores)}")
+        print(f"   Alumnos incluidos: {len(alumnos)}")
+        print(f"   Estructura: 4 campos/alumno (DNI, Nombre, Horas, Calif)")
         
         return valores
     
@@ -145,7 +133,6 @@ class WordGeneratorTransversal:
             
             campo_completo = match.group(0)
             
-            # Buscar el tag "separate"
             separate_match = re.search(
                 r'<w:fldChar\s+w:fldCharType="separate"[^>]*/>',
                 campo_completo
@@ -154,7 +141,6 @@ class WordGeneratorTransversal:
             if not separate_match:
                 return campo_completo
             
-            # Buscar contenido entre separate y end
             contenido_match = re.search(
                 r'(<w:fldChar\s+w:fldCharType="separate"[^>]*/>)(.*?)(<w:fldChar\s+w:fldCharType="end")',
                 campo_completo,
@@ -167,10 +153,8 @@ class WordGeneratorTransversal:
             separate_tag = contenido_match.group(1)
             end_tag = contenido_match.group(3)
             
-            # Crear nuevo contenido con el valor
             nuevo_contenido = f'<w:r><w:t xml:space="preserve">{self._escapar_xml(valor)}</w:t></w:r>'
-            
-            # Reemplazar
+
             campo_nuevo = campo_completo.replace(
                 separate_tag + contenido_match.group(2) + end_tag,
                 separate_tag + nuevo_contenido + end_tag,
@@ -178,8 +162,7 @@ class WordGeneratorTransversal:
             )
             
             return campo_nuevo
-        
-        # Patrón de campo completo
+
         patron = (
             r'<w:fldChar\s+w:fldCharType="begin"[^>]*>.*?'
             r'<w:fldChar\s+w:fldCharType="end"[^>]*/?>(?:</w:r>)?'
@@ -187,7 +170,7 @@ class WordGeneratorTransversal:
         
         xml_modificado = re.sub(patron, rellenar_campo, xml_content, flags=re.DOTALL)
         
-        print(f"  ✓ {contador} campos rellenados en el documento")
+        print(f"   {contador} campos rellenados en el documento")
         
         return xml_modificado
     
@@ -205,43 +188,36 @@ class WordGeneratorTransversal:
         
         return texto
 
-
-# PRUEBA DEL GENERADOR
 if __name__ == "__main__":
     import sys
     sys.path.insert(0, '/mnt/user-data/outputs')
     
     from transversales_processor import TransversalesProcessor
     
-    print("\n🧪 PRUEBA DEL GENERADOR TRANSVERSAL")
+    print("\n PRUEBA DEL GENERADOR TRANSVERSAL")
     print("=" * 80)
     
-    # Cargar datos
     with open('/mnt/user-data/uploads/2024_1339_CTRL_Tareas_AREA.xlsx', 'rb') as f:
         control_bytes = f.read()
     
     with open('/mnt/user-data/uploads/1339_Cronograma_v01__1_.xlsx', 'rb') as f:
         cronograma_bytes = f.read()
     
-    # Procesar datos
     processor = TransversalesProcessor()
     datos = processor.cargar_datos(control_bytes, cronograma_bytes)
     
-    print(f"✓ Datos extraídos: {datos['total_alumnos']} alumnos")
+    print(f" Datos extraídos: {datos['total_alumnos']} alumnos")
     
-    # Cargar plantilla
     with open('/mnt/user-data/outputs/plantilla_transversal_oficial.docx', 'rb') as f:
         plantilla_bytes = f.read()
     
-    print(f"✓ Plantilla cargada: {len(plantilla_bytes):,} bytes")
+    print(f" Plantilla cargada: {len(plantilla_bytes):,} bytes")
     
-    # Generar documento
     generador = WordGeneratorTransversal(plantilla_bytes)
     documento = generador.generar_acta(datos)
     
-    # Guardar
     with open('/mnt/user-data/outputs/ACTA_TRANSVERSAL_GENERADA.docx', 'wb') as f:
         f.write(documento)
     
-    print(f"\n✅ Documento generado: {len(documento):,} bytes")
-    print("✅ Guardado en: ACTA_TRANSVERSAL_GENERADA.docx")
+    print(f"\n Documento generado: {len(documento):,} bytes")
+    print(" Guardado en: ACTA_TRANSVERSAL_GENERADA.docx")

@@ -25,9 +25,6 @@ header, footer, #MainMenu { visibility: hidden; }
     max-width: 100% !important;
 }
 
-/* =============================
-   SIDEBAR
-============================= */
 [data-testid="stSidebar"] {
     background: var(--panel-dark) !important;
     border-right: 3px solid var(--holo-blue) !important;
@@ -40,7 +37,6 @@ header, footer, #MainMenu { visibility: hidden; }
     padding-bottom: 0 !important;
 }
 
-/* Eliminar padding del contenedor interno */
 [data-testid="stSidebar"] .block-container,
 [data-testid="stSidebar"] [data-testid="stVerticalBlock"] {
     padding-top: 0 !important;
@@ -48,7 +44,6 @@ header, footer, #MainMenu { visibility: hidden; }
     gap: 0 !important;
 }
 
-/* Primer elemento del sidebar sin margen superior */
 [data-testid="stSidebar"] > div > div {
     padding-top: 0 !important;
     margin-top: 0 !important;
@@ -118,11 +113,6 @@ header, footer, #MainMenu { visibility: hidden; }
     background: rgba(0,0,0,0.2);
 }
 
-/* =============================
-   BOTONES - ESTILO UNIFICADO PARA TODA LA APP
-============================= */
-
-/* TODOS los botones - estilo sidebar */
 .stButton > button,
 .main .stButton > button,
 button[kind="primary"],
@@ -141,7 +131,6 @@ button[data-baseweb="button"] {
     letter-spacing: 0.5px !important;
 }
 
-/* Hover para TODOS los botones */
 .stButton > button:hover,
 .main .stButton > button:hover,
 button[kind="primary"]:hover,
@@ -155,7 +144,6 @@ button[data-baseweb="button"]:hover {
     box-shadow: 0 4px 15px rgba(79,195,247,0.3) !important;
 }
 
-/* Active/Focus para TODOS los botones */
 .stButton > button:active,
 .stButton > button:focus,
 .main .stButton > button:active,
@@ -168,9 +156,6 @@ button[data-baseweb="button"]:active {
     box-shadow: 0 4px 20px rgba(79,195,247,0.4) !important;
 }
 
-/* =============================
-   TEXTOS VISIBLES
-============================= */
 p, span, div, label {
     color: var(--text-bright) !important;
 }
@@ -191,17 +176,11 @@ label {
     font-weight: 500 !important;
 }
 
-/* =============================
-   FILE UPLOADER - TEXTO OSCURO
-============================= */
-
-/* Label principal - blanco (fuera del cuadro) */
 [data-testid="stFileUploader"] > label {
     color: var(--text-bright) !important;
     font-weight: 600 !important;
 }
 
-/* Texto DENTRO del cuadro blanco - azul oscuro */
 [data-testid="stFileUploader"] section {
     background-color: white !important;
 }
@@ -213,20 +192,17 @@ label {
     font-weight: 500 !important;
 }
 
-/* "Drag and drop file here" - azul más oscuro */
 [data-testid="stFileUploader"] section > div > div > div > span {
     color: #0b0e14 !important;
     font-weight: 600 !important;
 }
 
-/* "Limit 200MB..." - gris oscuro */
 [data-testid="stFileUploader"] section small,
 [data-testid="stFileUploader"] small {
     color: #4a5568 !important;
     font-weight: 400 !important;
 }
 
-/* Botón Browse files */
 [data-testid="stFileUploader"] button {
     color: #1c2331 !important;
     border-color: #1c2331 !important;
@@ -239,11 +215,6 @@ label {
     color: #0b0e14 !important;
 }
 
-/* =============================
-   TABS - TAB SELECCIONADO MÁS VISIBLE
-============================= */
-
-/* Tabs normales (no seleccionados) */
 button[data-baseweb="tab"] {
     color: rgba(255, 255, 255, 0.6) !important;
     font-weight: 500 !important;
@@ -256,7 +227,6 @@ button[data-baseweb="tab"]:hover {
     border-bottom-color: rgba(79, 195, 247, 0.5) !important;
 }
 
-/* Tab seleccionado - MUY VISIBLE */
 button[data-baseweb="tab"][aria-selected="true"] {
     color: var(--holo-blue) !important;
     font-weight: 700 !important;
@@ -264,7 +234,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
     background: rgba(79, 195, 247, 0.1) !important;
 }
 
-/* Línea indicadora del tab */
 .stTabs [data-baseweb="tab-highlight"] {
     background-color: var(--holo-blue) !important;
     height: 3px !important;
@@ -274,7 +243,6 @@ button[data-baseweb="tab"][aria-selected="true"] {
     background-color: rgba(79, 195, 247, 0.3) !important;
 }
 
-/* Contenedor de tabs */
 [data-baseweb="tab-list"] {
     gap: 0 !important;
 }
@@ -290,8 +258,7 @@ def get_interpros_logo(image_path='assets/logo.png'):
     """Genera el HTML del logo de INTERPROS - VERSIÓN MINI"""
     import base64
     import os
-    
-    # Intentar múltiples ubicaciones
+
     ubicaciones = [
         image_path,
         os.path.join(os.getcwd(), 'assets', 'logo.png'),
@@ -360,7 +327,6 @@ def get_robot_assistant(image_path='assets/robot_asistente.png'):
     
     return f"""
 <style>
-/* Robot posición por defecto - sidebar abierto (abajo izquierda) */
 .robot-assistant {{
     position: fixed !important;
     bottom: 20px !important;
@@ -375,7 +341,6 @@ def get_robot_assistant(image_path='assets/robot_asistente.png'):
     transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
 }}
 
-/* Robot cuando sidebar cerrado - arriba derecha */
 body:has([data-testid="collapsedControl"]) .robot-assistant {{
     top: 80px !important;
     bottom: auto !important;
@@ -391,13 +356,11 @@ body:has([data-testid="collapsedControl"]) .robot-assistant {{
     transition: all 0.4s ease;
 }}
 
-/* Flotación constante */
 @keyframes float-robot {{
     0%, 100% {{ transform: translateY(0px); }}
     50% {{ transform: translateY(-15px); }}
 }}
 
-/* Hover */
 .robot-assistant:hover {{
     transform: scale(1.08) !important;
 }}
@@ -426,7 +389,6 @@ body:has([data-testid="collapsedControl"]) .robot-assistant {{
     transform: scale(1.02) translateY(-5px) !important;
 }}
 
-/* Brillo pulsante */
 .robot-assistant::before {{
     content: '';
     position: absolute;
@@ -452,9 +414,8 @@ body:has([data-testid="collapsedControl"]) .robot-assistant {{
     }}
 }}
 
-/* Burbuja - por defecto a la derecha (sidebar abierto) */
 .robot-assistant::after {{
-    content: '¡Hola! Soy tu Asistente Virtual';
+    content: '¡Hola! Soy tu Asistente SmartMind';
     position: absolute;
     top: 50%;
     left: 165px;
@@ -475,13 +436,11 @@ body:has([data-testid="collapsedControl"]) .robot-assistant {{
     transition: all 0.3s ease;
 }}
 
-/* Burbuja a la izquierda cuando sidebar cerrado */
 body:has([data-testid="collapsedControl"]) .robot-assistant::after {{
     left: auto !important;
     right: 165px !important;
 }}
 
-/* Mostrar burbuja en hover */
 .robot-assistant:hover::after {{
     transform: translateY(-50%) scale(1);
     opacity: 1;

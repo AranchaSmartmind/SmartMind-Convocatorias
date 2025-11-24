@@ -13,7 +13,6 @@ def cargar_plantilla_transversal_por_defecto():
         bytes: Contenido de la plantilla o None si no se encuentra
     """
     try:
-        # Ubicaciones posibles de la plantilla
         plantilla_transversal = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), 
             'plantilla_transversal_oficial.docx'
@@ -33,11 +32,11 @@ def cargar_plantilla_transversal_por_defecto():
                         print(f"✓ Plantilla transversal cargada desde: {ubicacion}")
                         return contenido
         
-        print("⚠ No se encontró plantilla transversal")
+        print(" No se encontró plantilla transversal")
         return None
         
     except Exception as e:
-        print(f"❌ Error cargando plantilla transversal: {e}")
+        print(f" Error cargando plantilla transversal: {e}")
         return None
 
 
@@ -56,13 +55,12 @@ INSTRUCCIONES PARA INSTALAR LA PLANTILLA:
    
    plantilla_bytes = cargar_plantilla_transversal_por_defecto()
    if plantilla_bytes:
-       st.info("📝 Usando plantilla oficial transversal predeterminada")
+       st.info(" Usando plantilla oficial transversal predeterminada")
    else:
-       st.error("❌ No se encontró la plantilla")
+       st.error(" No se encontró la plantilla")
        return
 """
 
-# Verificar que la plantilla existe
 if __name__ == "__main__":
     import sys
     sys.path.insert(0, '/mnt/user-data/outputs')
@@ -72,6 +70,6 @@ if __name__ == "__main__":
     if os.path.exists(plantilla_path):
         with open(plantilla_path, 'rb') as f:
             contenido = f.read()
-            print(f"✓ Plantilla encontrada: {len(contenido):,} bytes")
+            print(f" Plantilla encontrada: {len(contenido):,} bytes")
     else:
-        print("❌ Plantilla NO encontrada")
+        print(" Plantilla NO encontrada")

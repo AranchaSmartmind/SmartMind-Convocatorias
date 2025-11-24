@@ -99,11 +99,9 @@ def leer_datos_ctrl(excel_file):
 
 def leer_datos_excel(excel_file, datos_evaluacion=None):
     """Lee las pestañas CALIFICACIONES y ASISTENCIA del Excel"""
-    # Implementación completa aquí (código muy largo, lo dejo resumido)
     datos = {
         "alumnos": {},
     }
-    
-    # ... resto del código de leer_datos_excel ...
+
     
     return datos

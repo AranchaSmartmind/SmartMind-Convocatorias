@@ -16,12 +16,10 @@ def render_evaluacion():
         unsafe_allow_html=True
     )
     
-    # Crear las pestañas
     tab_ocupados, tab_desempleados, tab_gforma = st.tabs(
         ["Ocupados", "Desempleados", "GFORMA"]
     )
     
-    # Contenido de cada pestaña
     with tab_ocupados:
         render_tab_ocupados()
     
