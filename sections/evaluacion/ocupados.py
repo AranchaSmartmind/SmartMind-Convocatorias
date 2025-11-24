@@ -61,8 +61,8 @@ except Exception as e:
     st.error(f"Error importando módulos básicos: {e}")
 
 try:
-    from ocupados_certificaciones_processor import procesar_certificaciones
-    from ocupados_certificaciones_generator import generar_certificado_ocupado
+    from sections.evaluacion.ocupados_certificaciones_processor import procesar_certificaciones
+    from sections.evaluacion.ocupados_certificaciones_generator import generar_certificado_ocupado
     CERTIFICACIONES_DISPONIBLE = True
 except ImportError as e:
     st.warning(f" Módulo de certificaciones no disponible: {e}")
