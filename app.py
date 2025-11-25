@@ -25,7 +25,7 @@ try:
     from sections.fin import render_fin
     from sections.inicio import render_inicio
     from sections.captacion import render_captacion
-    from sections.cierre_mes import render_cierre_mes
+    from sections.cierre_mes import render_cierre_mes       
 except ImportError as e:
     st.error(f"Error al importar secciones: {e}")
     st.stop()
