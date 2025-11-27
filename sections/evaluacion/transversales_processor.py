@@ -1,248 +1,224 @@
 """
-PROCESADOR DE DATOS TRANSVERSALES
-==================================
-Extrae datos del Excel de control de tareas para generar actas transversales
+PROCESADOR DE DATOS TRANSVERSALES (FCOO03)
+===========================================
+Extrae datos de archivos Excel para generar actas transversales
 """
 import pandas as pd
-import io
+from io import BytesIO
 from typing import Dict, List
+import re
 
 
 class TransversalesProcessor:
-    """Procesa datos de competencias transversales desde Excel"""
+    """
+    Procesa archivos Excel de transversales (FCOO03)
+    Extrae datos del curso y alumnos
+    """
     
     def __init__(self):
-        self.df_resumen = None
-        self.df_calificaciones = None
+        pass
     
     def cargar_datos(self, control_bytes: bytes, cronograma_bytes: bytes) -> Dict:
         """
-        Carga datos del Excel de control y cronograma
+        Carga y procesa datos de transversales desde los archivos Excel
         
         Args:
-            control_bytes: Bytes del archivo Excel CTRL_Tareas_AREA.xlsx
-            cronograma_bytes: Bytes del archivo Cronograma.xlsx
-            
+            control_bytes: Bytes del archivo CTRL_Tareas_AREA
+            cronograma_bytes: Bytes del archivo Cronograma
+        
         Returns:
-            Dict con datos procesados para el acta
+            Dict con todos los datos procesados
         """
+        
         try:
-            self.df_resumen = pd.read_excel(
-                io.BytesIO(control_bytes), 
-                sheet_name='RESUMEN',
-                header=0
+            print("\n📊 Procesando archivos de transversales...")
+            
+            # Leer pestaña ASISTENCIA para obtener datos del curso
+            df_asist = pd.read_excel(BytesIO(control_bytes), sheet_name='ASISTENCIA', header=None)
+            
+            # Extraer datos del curso de las primeras filas
+            curso_codigo = self._extraer_valor(df_asist, 0, 'curso:')
+            curso_nombre = self._extraer_valor(df_asist, 1, 'nombre:')
+            convocatoria = self._extraer_valor(df_asist, 2, 'convocatoria:')
+            
+            print(f"  📋 Curso: {curso_codigo}")
+            print(f"  📝 Nombre: {curso_nombre}")
+            
+            # Buscar fila con "FCOO03" para obtener fechas
+            fila_fcoo03 = None
+            for idx, row in df_asist.iterrows():
+                if any('FCOO03' in str(val) for val in row if pd.notna(val)):
+                    fila_fcoo03 = idx
+                    break
+            
+            fechas = ''
+            horas_fcoo03 = ''
+            if fila_fcoo03 is not None:
+                celda_fcoo03 = df_asist.iloc[fila_fcoo03, 5]  # Columna donde está FCOO03
+                if pd.notna(celda_fcoo03):
+                    texto = str(celda_fcoo03)
+                    # Extraer fechas del formato "FCOO03 \nFechas: 20/02/2025 - 27/06/2025"
+                    match_fechas = re.search(r'Fechas:\s*(\d{2}/\d{2}/\d{4})\s*-\s*(\d{2}/\d{2}/\d{4})', texto)
+                    if match_fechas:
+                        fecha_inicio = match_fechas.group(1)
+                        fecha_fin = match_fechas.group(2)
+                        fechas = f"{fecha_inicio} - {fecha_fin}"
+                
+                # Horas en la siguiente columna
+                horas_val = df_asist.iloc[fila_fcoo03, 6]
+                if pd.notna(horas_val):
+                    horas_fcoo03 = str(horas_val)
+            
+            print(f"  📅 Fechas FCOO03: {fechas}")
+            print(f"  ⏱️ Horas: {horas_fcoo03}")
+            
+            # Buscar fila de encabezados (donde está "ALUMNO", "DNI", etc.)
+            fila_encabezado = None
+            for idx, row in df_asist.iterrows():
+                if any('ALUMNO' in str(val).upper() for val in row if pd.notna(val)):
+                    fila_encabezado = idx
+                    break
+            
+            if fila_encabezado is None:
+                raise Exception("No se encontró la fila de encabezados con 'ALUMNO'")
+            
+            print(f"  📌 Encabezado en fila: {fila_encabezado}")
+            
+            # Leer datos de alumnos desde la fila después del encabezado
+            df_alumnos = pd.read_excel(
+                BytesIO(control_bytes), 
+                sheet_name='ASISTENCIA', 
+                header=fila_encabezado,
+                skiprows=0
             )
             
-            self.df_calificaciones = pd.read_excel(
-                io.BytesIO(control_bytes),
-                sheet_name='CALIFICACIONES',
-                header=7
-            )
-            
-            campo_1_convocatoria = ''
-            
-            df_asistencia = pd.read_excel(
-                io.BytesIO(control_bytes),
-                sheet_name='ASISTENCIA',
-                header=None
-            )
-            campo_2_accion = str(df_asistencia.iloc[0, 2]) if pd.notna(df_asistencia.iloc[0, 2]) else ''
-
-            df_cronograma = pd.read_excel(
-                io.BytesIO(cronograma_bytes),
-                sheet_name='Cronograma',
-                header=None
-            )
-
-            valor_fila20 = str(df_cronograma.iloc[19, 0])
-
-            partes = valor_fila20.split(None, 1)
-            if len(partes) >= 2:
-                campo_4_codigo = partes[0]
-                campo_3_especialidad = partes[1]
-            else:
-                campo_4_codigo = ''
-                campo_3_especialidad = valor_fila20
-            
-            campo_5_centro = 'INTERPROS NEXT GENERATION S.L.U'
-
-            campo_6_duracion = str(df_cronograma.iloc[19, 2]) if pd.notna(df_cronograma.iloc[19, 2]) else ''
-
-            campo_7_actividades = '1'
-
-            campo_8_modalidad = 'Presencial'
-            for col in range(15):
-                valor = df_cronograma.iloc[9, col]
-                if pd.notna(valor) and 'Modalidad' in str(valor):
-                    if 'Presencial' in str(valor):
-                        campo_8_modalidad = 'Presencial'
-                        break
-            
-            valor_fechas = str(df_cronograma.iloc[19, 8])
-            
-            if '-' in valor_fechas:
-                partes_fechas = valor_fechas.split('-')
-                if len(partes_fechas) == 2:
-                    campo_9_fecha_inicio = partes_fechas[0].strip()
-                    campo_10_fecha_fin = partes_fechas[1].strip()
+            # Procesar alumnos
+            alumnos = []
+            for idx, row in df_alumnos.iterrows():
+                # Saltar filas vacías o sin DNI
+                if pd.isna(row.get('DNI')) or row.get('DNI') == '':
+                    continue
+                
+                nombre = str(row.get('ALUMNO', '')).strip()
+                dni = str(row.get('DNI', '')).strip()
+                
+                # Buscar columna de horas FCOO03 (la columna 5 o 6 según estructura)
+                horas_actividades = horas_fcoo03
+                
+                # Determinar calificación (si hay datos de baja, es NO APTO)
+                baja = row.get('BAJA MOTIVOS', '')
+                if pd.notna(baja) and str(baja).strip() != '':
+                    calificacion = 'NO APTO'
                 else:
-                    campo_9_fecha_inicio = ''
-                    campo_10_fecha_fin = ''
-            else:
-                campo_9_fecha_inicio = ''
-                campo_10_fecha_fin = ''
+                    # Buscar porcentaje de asistencia
+                    porcentaje_col = None
+                    for col in df_alumnos.columns:
+                        if '%' in str(col):
+                            porcentaje_col = col
+                            break
+                    
+                    if porcentaje_col and pd.notna(row.get(porcentaje_col)):
+                        porcentaje = float(row.get(porcentaje_col, 0))
+                        if porcentaje >= 0.75:  # 75% o más
+                            calificacion = 'APTO'
+                        else:
+                            calificacion = 'NO APTO'
+                    else:
+                        calificacion = 'APTO'  # Por defecto
+                
+                if nombre and dni:
+                    alumnos.append({
+                        'numero': len(alumnos) + 1,
+                        'dni': dni,
+                        'nombre': nombre,
+                        'horas_actividades': horas_actividades,
+                        'calificacion_final': calificacion
+                    })
             
-            alumnos = self._procesar_alumnos(control_bytes)
+            print(f"  👥 Alumnos procesados: {len(alumnos)}")
             
-            horas_totales = self._calcular_horas_totales()
+            # Extraer fechas del cronograma si es necesario
+            fecha_inicio = ''
+            fecha_fin = ''
+            if fechas:
+                partes = fechas.split(' - ')
+                if len(partes) == 2:
+                    fecha_inicio = partes[0]
+                    fecha_fin = partes[1]
             
-            return {
-                'campo_1_convocatoria': campo_1_convocatoria,
-                'campo_2_accion': campo_2_accion,
-                'campo_3_especialidad': campo_3_especialidad,
-                'campo_4_codigo': campo_4_codigo,
-                'campo_5_centro': campo_5_centro,
-                'campo_6_duracion': campo_6_duracion,
-                'campo_7_actividades': campo_7_actividades,
-                'campo_8_modalidad': campo_8_modalidad,
-                'campo_9_fecha_inicio': campo_9_fecha_inicio,
-                'campo_10_fecha_fin': campo_10_fecha_fin,
+            # Construir diccionario de salida
+            datos = {
+                'campo_1_convocatoria': convocatoria or '',
+                'campo_2_accion': curso_codigo or '',
+                'campo_3_especialidad': curso_nombre or '',
+                'campo_4_codigo': 'FCOO03',
+                'campo_5_centro': 'INTERPROS NEXT GENERATION S.L.U.',
+                'campo_6_duracion': horas_fcoo03 or '10',
+                'campo_7_actividades': horas_fcoo03 or '10',
+                'campo_8_modalidad': 'PRESENCIAL',
+                'campo_9_fecha_inicio': fecha_inicio,
+                'campo_10_fecha_fin': fecha_fin,
                 'alumnos': alumnos,
-                'total_alumnos': len(alumnos),
-                'horas_totales': horas_totales,
-                'success': True
+                'total_alumnos': len(alumnos)
             }
+            
+            print(f"✅ Datos procesados correctamente\n")
+            
+            return datos
             
         except Exception as e:
+            print(f"❌ Error procesando Excel transversales: {str(e)}")
             raise Exception(f"Error procesando Excel transversales: {str(e)}")
     
-    def _procesar_alumnos(self, control_bytes: bytes) -> List[Dict]:
+    def _extraer_valor(self, df: pd.DataFrame, fila: int, clave: str) -> str:
         """
-        Procesa lista de alumnos desde ASISTENCIA y RESUMEN
+        Extrae un valor de una fila que tiene formato 'clave: valor'
         
-        Extrae:
-        - Columna B (ASISTENCIA): Nombre
-        - Columna C (ASISTENCIA): DNI
-        - Columna Z (ASISTENCIA): Horas (% total convertido a horas)
-        - Columna K (RESUMEN): Calificación PRL
+        Args:
+            df: DataFrame
+            fila: Número de fila
+            clave: Texto clave a buscar
+        
+        Returns:
+            Valor extraído como string
         """
+        try:
+            row = df.iloc[fila]
+            for val in row:
+                if pd.notna(val) and clave in str(val).lower():
+                    # El valor está en la siguiente columna
+                    idx = row.tolist().index(val)
+                    if idx + 1 < len(row):
+                        valor = row.iloc[idx + 1]
+                        if pd.notna(valor):
+                            return str(valor).strip()
+            return ''
+        except Exception as e:
+            print(f"  ⚠ Error extrayendo {clave}: {e}")
+            return ''
 
-        df_asistencia = pd.read_excel(
-            io.BytesIO(control_bytes),
-            sheet_name='ASISTENCIA',
-            header=None
-        )
-        
-        df_resumen = pd.read_excel(
-            io.BytesIO(control_bytes),
-            sheet_name='RESUMEN',
-            header=0
-        )
-        
-        alumnos = []
-
-        fila_inicio = 10
-        
-        for i in range(20):
-            fila_idx = fila_inicio + i
-
-            if fila_idx >= len(df_asistencia):
-                break
-
-            nombre = df_asistencia.iloc[fila_idx, 1]
-
-            if pd.isna(nombre) or str(nombre).strip() == '':
-                break
-
-            dni = df_asistencia.iloc[fila_idx, 2]
-            dni = str(dni) if pd.notna(dni) else ''
-
-            horas_valor = df_asistencia.iloc[fila_idx, 25]
-
-            if pd.notna(horas_valor):
-                try:
-                    horas_float = float(horas_valor)
-
-                    if horas_float == int(horas_float):
-                        horas_actividades = str(int(horas_float))
-                    else:
-                        horas_actividades = str(round(horas_float, 1))
-                except:
-                    horas_actividades = '0'
-            else:
-                horas_actividades = '0'
-
-            if i < len(df_resumen):
-                fcoo03 = df_resumen.iloc[i, 10]
-                fcoo03_str = str(fcoo03).strip().upper()
-
-                if 'APTO' in fcoo03_str and 'NO' not in fcoo03_str:
-                    calificacion = 'APTO'
-                elif 'NO APTO' in fcoo03_str:
-                    calificacion = 'NO APTO'
-                elif 'CONV' in fcoo03_str:
-                    calificacion = 'PENDIENTE'
-                elif 'EXENTA' in fcoo03_str or 'EXENTO' in fcoo03_str:
-                    calificacion = 'EXENTO/A'
-                elif fcoo03_str == 'NO' or fcoo03_str == 'NAN':
-                    calificacion = 'NO APTO'
-                else:
-                    calificacion = ''
-            else:
-                calificacion = ''
-            
-            alumno = {
-                'numero': i + 1,
-                'dni': dni,
-                'nombre': str(nombre),
-                'horas_actividades': horas_actividades,
-                'calificacion_final': calificacion
-            }
-            
-            alumnos.append(alumno)
-        
-        return alumnos
-    
-    def _calcular_horas_totales(self) -> int:
-        """Calcula total de horas del módulo transversal FCOO03"""
-        return 10
-
-
-def extraer_info_curso_transversales(file_bytes: bytes) -> Dict:
-    """
-    Función auxiliar para extraer información básica del curso
-    
-    Args:
-        file_bytes: Bytes del archivo Excel
-        
-    Returns:
-        Dict con información del curso
-    """
-    try:
-        df = pd.read_excel(io.BytesIO(file_bytes), sheet_name='RESUMEN', header=None)
-        
-        return {
-            'codigo': str(df.iloc[0, 2]) if pd.notna(df.iloc[0, 2]) else '',
-            'nombre': str(df.iloc[1, 2]) if pd.notna(df.iloc[1, 2]) else '',
-            'convocatoria': str(df.iloc[2, 2]) if pd.notna(df.iloc[2, 2]) else ''
-        }
-    except Exception as e:
-        print(f"Error extrayendo info curso: {e}")
-        return {}
 
 if __name__ == "__main__":
-    with open('/mnt/user-data/uploads/2024_1339_CTRL_Tareas_AREA.xlsx', 'rb') as f:
-        file_bytes = f.read()
+    # Prueba del procesador
+    import sys
+    sys.path.insert(0, '/mnt/user-data/uploads')
+    
+    print("\n🧪 PRUEBA DEL PROCESADOR TRANSVERSALES")
+    print("=" * 80)
+    
+    with open('PTEREvisar_2024_1334_CTRL_Tareas_AREA_v001__1_.xlsx', 'rb') as f:
+        control_bytes = f.read()
+    
+    # Usar el mismo archivo como cronograma por ahora
+    cronograma_bytes = control_bytes
     
     processor = TransversalesProcessor()
-    datos = processor.cargar_datos(file_bytes)
+    datos = processor.cargar_datos(control_bytes, cronograma_bytes)
     
-    print("\n DATOS EXTRAÍDOS:")
-    print(f"Curso: {datos['curso_codigo']} - {datos['curso_nombre']}")
-    print(f"Convocatoria: {datos['convocatoria']}")
-    print(f"Total alumnos: {datos['total_alumnos']}")
-    print(f"Horas totales: {datos['horas_totales']}")
-    print(f"\n ALUMNOS:")
-    for alumno in datos['alumnos'][:5]:
-        print(f"  {alumno['numero']}. {alumno['nombre']} - {alumno['dni']}")
-        print(f"     Horas: {alumno['horas_actividades']} | Calificación: {alumno['calificacion_final']}")
+    print(f"\n📊 RESULTADO:")
+    print(f"  Curso: {datos['campo_2_accion']}")
+    print(f"  Especialidad: {datos['campo_3_especialidad']}")
+    print(f"  Total alumnos: {datos['total_alumnos']}")
+    print(f"\n  Primeros 3 alumnos:")
+    for alumno in datos['alumnos'][:3]:
+        print(f"    {alumno['numero']}. {alumno['nombre']} - {alumno['calificacion_final']}")

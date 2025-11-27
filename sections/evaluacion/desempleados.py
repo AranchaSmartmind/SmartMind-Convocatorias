@@ -54,14 +54,25 @@ def detectar_tipo_archivo(doc_bytes: bytes, curso_codigo: str, tipo: str = "Grup
 
 
 try:
-    from excel_processor import ExcelProcessorReal
-    from word_generator import WordGeneratorSEPE
-    from cronograma_processor import CronogramaProcessor
-    from word_generator_grupal import WordGeneratorActaGrupal
-    from transversales_processor import TransversalesProcessor
-    from word_generator_transversal import WordGeneratorTransversal
+    from .excel_processor import ExcelProcessorReal
+    print("✅ excel_processor importado")
+    from .word_generator import WordGeneratorSEPE
+    print("✅ word_generator importado")
+    from .word_generator_helper import generar_zip_todos_alumnos
+    print("✅ word_generator_helper importado")
+    from .cronograma_processor import CronogramaProcessor
+    print("✅ cronograma_processor importado")
+    from .word_generator_grupal import WordGeneratorActaGrupal
+    print("✅ word_generator_grupal importado")
+    from .transversales_processor import TransversalesProcessor
+    print("✅ transversales_processor importado")
+    from .word_generator_transversal import WordGeneratorTransversal
+    print("✅ word_generator_transversal importado")
 except Exception as e:
-    st.error(f"Error importando módulos: {e}")
+    st.error(f"❌ Error importando módulos: {e}")
+    import traceback
+    st.error(traceback.format_exc())
+    raise
 
 PLANTILLA_POR_DEFECTO = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 
@@ -85,11 +96,11 @@ def cargar_plantilla_por_defecto():
                         print(f"✓ Plantilla cargada desde: {ubicacion}")
                         return contenido
         
-        print(" No se encontró plantilla en ninguna ubicación")
+        print("⚠ No se encontró plantilla en ninguna ubicación")
         return None
         
     except Exception as e:
-        print(f" Error cargando plantilla: {e}")
+        print(f"⚠ Error cargando plantilla: {e}")
         return None
     
 def cargar_plantilla_grupal_por_defecto():
@@ -113,11 +124,11 @@ def cargar_plantilla_grupal_por_defecto():
                         print(f"✓ Plantilla grupal cargada desde: {ubicacion}")
                         return contenido
         
-        print(" No se encontró plantilla grupal")
+        print("⚠ No se encontró plantilla grupal")
         return None
         
     except Exception as e:
-        print(f" Error cargando plantilla grupal: {e}")
+        print(f"⚠ Error cargando plantilla grupal: {e}")
         return None
 
 
@@ -142,11 +153,11 @@ def cargar_plantilla_transversal_por_defecto():
                         print(f"✓ Plantilla transversal cargada desde: {ubicacion}")
                         return contenido
         
-        print(" No se encontró plantilla transversal")
+        print("⚠ No se encontró plantilla transversal")
         return None
         
     except Exception as e:
-        print(f" Error cargando plantilla transversal: {e}")
+        print(f"⚠ Error cargando plantilla transversal: {e}")
         return None
 
 
@@ -163,21 +174,21 @@ def render_tab_desempleados():
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("Acta Individual", 
+        if st.button("📄 Acta Individual", 
                      key="btn_individual_desempleados",
                      use_container_width=True):
             st.session_state.desempleados_tipo_acta = "individual"
             st.rerun()
     
     with col2:
-        if st.button("Acta Grupal", 
+        if st.button("📋 Acta Grupal", 
                      key="btn_grupal_desempleados",
                      use_container_width=True):
             st.session_state.desempleados_tipo_acta = "grupal"
             st.rerun()
     
     with col3:
-        if st.button("Transversales", 
+        if st.button("🎓 Transversales", 
                      key="btn_transversales_desempleados",
                      use_container_width=True):
             st.session_state.desempleados_tipo_acta = "transversales"
@@ -198,9 +209,9 @@ def render_tab_desempleados():
 def render_individual():
     """Render para actas individuales"""
     
-    st.markdown("### Acta Individual")
+    st.markdown("### 📄 Acta Individual")
     st.markdown("Genera informes individualizados para cada alumno")
-    st.markdown("### Archivos")
+    st.markdown("### 📁 Archivos")
     
     col1, col2, col3 = st.columns(3)
     
@@ -212,9 +223,9 @@ def render_individual():
             type=['xlsx', 'xls']
         )
         if cronograma_file:
-            st.success(" Cargado")
+            st.success("✓ Cargado")
         else:
-            st.warning(" Requerido")
+            st.warning("⚠ Requerido")
     
     with col2:
         st.markdown("**Asistencias**")
@@ -224,9 +235,9 @@ def render_individual():
             type=['xlsx', 'xls']
         )
         if asistencias_file:
-            st.success(" Cargado")
+            st.success("✓ Cargado")
         else:
-            st.warning(" Requerido")
+            st.warning("⚠ Requerido")
     
     with col3:
         st.markdown("**Plantilla (Opcional)**")
@@ -237,11 +248,11 @@ def render_individual():
             help="Si no subes ninguna, se usará la plantilla oficial SEPE predeterminada"
         )
         if plantilla_file:
-            st.success(" Personalizada")
+            st.success("✓ Personalizada")
         else:
-            st.info(" Por defecto")
+            st.info("ℹ Por defecto")
     
-    with st.expander(" Información", expanded=False):
+    with st.expander("ℹ Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
         
@@ -263,18 +274,18 @@ def render_individual():
         """)
     
     if not cronograma_file or not asistencias_file:
-        st.info(" Sube al menos el cronograma y asistencias para continuar")
+        st.info("ℹ Sube al menos el cronograma y asistencias para continuar")
         return
     
     st.markdown("---")
     
     try:
-        with st.spinner('Procesando archivos...'):
+        with st.spinner('⏳ Procesando archivos...'):
             processor = ExcelProcessorReal()
             datos = processor.cargar_asistencias(asistencias_file.read())
         
-        st.success(" Datos procesados correctamente")
-        st.markdown("### Resumen de Datos")
+        st.success("✅ Datos procesados correctamente")
+        st.markdown("### 📊 Resumen de Datos")
         
         with st.expander("Ver datos extraídos", expanded=True):
             col1, col2, col3 = st.columns(3)
@@ -299,9 +310,9 @@ def render_individual():
             st.dataframe(df, use_container_width=True, hide_index=True)
         
         st.markdown("---")
-        st.markdown("### Generar Actas")
+        st.markdown("### 🚀 Generar Actas")
         
-        if st.button(" Generar TODAS las Actas (Word)", type="primary", use_container_width=True, key="desempleados_individual_generar_todas"):
+        if st.button("📦 Generar TODAS las Actas (ZIP)", type="primary", use_container_width=True, key="desempleados_individual_generar_todas"):
             try:
                 alumnos = datos['alumnos']
                 total = len(alumnos)
@@ -309,61 +320,49 @@ def render_individual():
                 if plantilla_file:
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
-                    st.info(" Usando plantilla personalizada")
+                    st.info("ℹ Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_por_defecto()
                     if plantilla_bytes:
-                        st.info(" Usando plantilla oficial SEPE predeterminada")
+                        st.info("ℹ Usando plantilla oficial SEPE predeterminada")
                     else:
-                        st.error(" No se pudo cargar la plantilla predeterminada")
-                        st.warning(" Sube una plantilla manualmente")
+                        st.error("❌ No se pudo cargar la plantilla predeterminada")
+                        st.warning("⚠ Sube una plantilla manualmente")
                         return
                 
-                with st.spinner(f' Generando {total} actas...'):
-                    zip_buffer = BytesIO()
-                    
-                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
-                        progress = st.progress(0)
-                        status = st.empty()
-                        
-                        for idx, alumno in enumerate(alumnos):
-                            progress.progress((idx + 1) / total)
-                            status.text(f"{idx + 1}/{total}: {alumno['nombre'][:40]}")
-                            
-                            datos_alumno = {
-                                'alumno': alumno,
-                                'curso': {
-                                    'nombre': datos['curso_nombre'],
-                                    'codigo': datos['curso_codigo']
-                                }
+                with st.spinner(f'⏳ Generando {total} actas...'):
+                    # CÓDIGO CORREGIDO - Usar helper
+                    lista_datos = []
+                    for alumno in alumnos:
+                        datos_alumno = {
+                            'alumno': alumno,
+                            'curso': {
+                                'nombre': datos['curso_nombre'],
+                                'codigo': datos['curso_codigo']
                             }
-                            
-                            gen = WordGeneratorSEPE(plantilla_bytes, es_xml=False)
-                            doc = gen.generar_informe_individual(datos_alumno)
-                            
-                            nombre = alumno['nombre'].replace(' ', '_').replace(',', '')[:50]
-                            zf.writestr(f"{nombre}.docx", doc)
-                        
-                        progress.progress(1.0)
-                        status.text(f" {total} actas generadas")
+                        }
+                        lista_datos.append(datos_alumno)
                     
-                    zip_buffer.seek(0)
-                    st.session_state['zip_actas_desempleados_individual'] = zip_buffer.getvalue()
+                    # Generar con manejo automático de ZIP
+                    gen = WordGeneratorSEPE(plantilla_bytes, es_xml=False)
+                    zip_bytes = generar_zip_todos_alumnos(gen, lista_datos)
+                    
+                    st.session_state['zip_actas_desempleados_individual'] = zip_bytes
                     st.session_state['nombre_zip_desempleados_individual'] = f"Actas_Individual_Desempleados_{datos['curso_codigo'].replace('/', '_')}.zip"
                 
                 st.balloons()
-                st.success(f" {total} actas generadas correctamente")
+                st.success(f"✅ {total} actas generadas correctamente")
                 
             except Exception as e:
-                st.error(f" Error: {str(e)}")
+                st.error(f"❌ Error: {str(e)}")
                 st.exception(e)
         
         if 'zip_actas_desempleados_individual' in st.session_state:
             st.markdown("---")
-            st.markdown("### Descargar")
+            st.markdown("### 📥 Descargar")
             
             st.download_button(
-                label=" Descargar ZIP con todas las actas",
+                label="📥 Descargar ZIP con todas las actas",
                 data=st.session_state['zip_actas_desempleados_individual'],
                 file_name=st.session_state['nombre_zip_desempleados_individual'],
                 mime="application/zip",
@@ -373,7 +372,7 @@ def render_individual():
             )
         
         st.markdown("---")
-        st.markdown("### Vista Individual")
+        st.markdown("### 👤 Vista Individual")
         
         alumno_seleccionado = st.selectbox(
             "Selecciona un alumno",
@@ -382,7 +381,7 @@ def render_individual():
             key="desempleados_individual_selector"
         )
         
-        if st.button(" Generar vista previa", use_container_width=True, key="desempleados_individual_preview"):
+        if st.button("🔍 Generar vista previa", use_container_width=True, key="desempleados_individual_preview"):
             try:
                 alumno = datos['alumnos'][alumno_seleccionado]
                 
@@ -404,32 +403,40 @@ def render_individual():
                     gen = WordGeneratorSEPE(plantilla_bytes, es_xml=False)
                     doc = gen.generar_informe_individual(datos_ind)
                     
+                    # Detectar si es ZIP o DOCX
+                    if doc[:2] == b'PK':
+                        extension = '.zip'
+                        mime = 'application/zip'
+                    else:
+                        extension = '.docx'
+                        mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                    
                     st.download_button(
-                        label=" Descargar informe individual",
+                        label=f"📥 Descargar informe individual ({extension})",
                         data=doc,
-                        file_name=f"{alumno['nombre'].replace(' ', '_')}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        file_name=f"{alumno['nombre'].replace(' ', '_')}{extension}",
+                        mime=mime,
                         use_container_width=True,
                         key="desempleados_individual_download_one"
                     )
                 else:
-                    st.error(" No hay plantilla disponible")
+                    st.error("❌ No hay plantilla disponible")
                     
             except Exception as e:
-                st.error(f" Error: {str(e)}")
+                st.error(f"❌ Error: {str(e)}")
                 st.exception(e)
     
     except Exception as e:
-        st.error(f" Error procesando archivos: {str(e)}")
+        st.error(f"❌ Error procesando archivos: {str(e)}")
         st.exception(e)
 
 
 def render_grupal():
     """Render para acta grupal"""
     
-    st.markdown("### Acta Grupal")
+    st.markdown("### 📋 Acta Grupal")
     st.markdown("Genera el acta de evaluación final con todos los alumnos del grupo")
-    st.markdown("### Archivos")
+    st.markdown("### 📁 Archivos")
     
     col1, col2, col3 = st.columns(3)
     
@@ -441,9 +448,9 @@ def render_grupal():
             type=['xlsx', 'xls']
         )
         if cronograma_file:
-            st.success(" Cargado")
+            st.success("✓ Cargado")
         else:
-            st.warning(" Requerido")
+            st.warning("⚠ Requerido")
     
     with col2:
         st.markdown("**Asistencias**")
@@ -453,9 +460,9 @@ def render_grupal():
             type=['xlsx', 'xls']
         )
         if asistencias_file:
-            st.success(" Cargado")
+            st.success("✓ Cargado")
         else:
-            st.warning(" Requerido")
+            st.warning("⚠ Requerido")
     
     with col3:
         st.markdown("**Plantilla (Opcional)**")
@@ -466,11 +473,11 @@ def render_grupal():
             help="Si no subes ninguna, se usará la plantilla oficial SEPE predeterminada"
         )
         if plantilla_file:
-            st.success(" Personalizada")
+            st.success("✓ Personalizada")
         else:
-            st.info(" Por defecto")
+            st.info("ℹ Por defecto")
     
-    with st.expander(" Información", expanded=False):
+    with st.expander("ℹ Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
         
@@ -492,21 +499,21 @@ def render_grupal():
         """)
     
     if not cronograma_file or not asistencias_file:
-        st.info(" Sube el cronograma y asistencias para continuar")
+        st.info("ℹ Sube el cronograma y asistencias para continuar")
         return
     
     st.markdown("---")
     
     try:
-        with st.spinner(' Procesando archivos...'):
+        with st.spinner('⏳ Procesando archivos...'):
             processor = ExcelProcessorReal()
             datos = processor.cargar_asistencias(asistencias_file.read())
             crono_processor = CronogramaProcessor()
             cronograma_file.seek(0)
             datos_cronograma = crono_processor.cargar_cronograma(cronograma_file.read())
         
-        st.success(" Datos procesados correctamente")
-        st.markdown("### Resumen del Grupo")
+        st.success("✅ Datos procesados correctamente")
+        st.markdown("### 📊 Resumen del Grupo")
         
         with st.expander("Ver datos del grupo", expanded=True):
 
@@ -551,9 +558,9 @@ def render_grupal():
             st.dataframe(df, use_container_width=True, hide_index=True)
         
         st.markdown("---")
-        st.markdown("### Generar Acta Grupal")
+        st.markdown("### 🚀 Generar Acta Grupal")
         
-        if st.button(" Generar Acta Grupal", 
+        if st.button("📋 Generar Acta Grupal", 
                     type="primary", 
                     use_container_width=True,
                     key="desempleados_grupal_generar"):
@@ -574,17 +581,17 @@ def render_grupal():
                 if plantilla_file:
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
-                    st.info(" Usando plantilla personalizada")
+                    st.info("ℹ Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_grupal_por_defecto()
                     if plantilla_bytes:
-                        st.info(" Usando plantilla oficial SEPE predeterminada")
+                        st.info("ℹ Usando plantilla oficial SEPE predeterminada")
                     else:
-                        st.error(" No se encontró la plantilla predeterminada")
-                        st.warning(" Sube una plantilla manualmente")
+                        st.error("❌ No se encontró la plantilla predeterminada")
+                        st.warning("⚠ Sube una plantilla manualmente")
                         return
                 
-                with st.spinner(' Generando acta grupal...'):
+                with st.spinner('⏳ Generando acta grupal...'):
                     gen = WordGeneratorMultipaginaDuplicaTodo(plantilla_bytes)
                     doc = gen.generar_acta_grupal(datos_acta)
                     nombre, mime = detectar_tipo_archivo(doc, datos['curso_codigo'], "Grupal_Desempleados")
@@ -594,18 +601,18 @@ def render_grupal():
                     st.session_state['mime_acta_grupal_desempleados'] = mime
                 
                 st.balloons()
-                st.success(" ¡Acta grupal generada correctamente!")
+                st.success("✅ ¡Acta grupal generada correctamente!")
                 
             except Exception as e:
-                st.error(f" Error generando acta: {str(e)}")
+                st.error(f"❌ Error generando acta: {str(e)}")
                 st.exception(e)
         
         if 'acta_grupal_desempleados' in st.session_state:
             st.markdown("---")
-            st.markdown("### Descargar")
+            st.markdown("### 📥 Descargar")
             
             st.download_button(
-                label=" Descargar Acta Grupal",
+                label="📥 Descargar Acta Grupal",
                 data=st.session_state['acta_grupal_desempleados'],
                 file_name=st.session_state['nombre_acta_grupal_desempleados'],
                 mime=st.session_state.get('mime_acta_grupal_desempleados', 'application/zip'),
@@ -615,16 +622,16 @@ def render_grupal():
             )
     
     except Exception as e:
-        st.error(f" Error procesando archivos: {str(e)}")
+        st.error(f"❌ Error procesando archivos: {str(e)}")
         st.exception(e)
 
 
 def render_transversales():
     """Render para actas transversales (FCOO03)"""
     
-    st.markdown("### Actas Transversales (FCOO03)")
+    st.markdown("### 🎓 Actas Transversales (FCOO03)")
     st.markdown("Genera actas de evaluación final para competencias transversales")
-    st.markdown("### Archivos")
+    st.markdown("### 📁 Archivos")
     
     col1, col2, col3 = st.columns(3)
     
@@ -636,9 +643,9 @@ def render_transversales():
             type=['xlsx', 'xls']
         )
         if cronograma_file:
-            st.success(" Cargado")
+            st.success("✓ Cargado")
         else:
-            st.warning(" Requerido")
+            st.warning("⚠ Requerido")
     
     with col2:
         st.markdown("**Control de Tareas**")
@@ -648,9 +655,9 @@ def render_transversales():
             type=['xlsx', 'xls']
         )
         if control_file:
-            st.success(" Cargado")
+            st.success("✓ Cargado")
         else:
-            st.warning(" Requerido")
+            st.warning("⚠ Requerido")
     
     with col3:
         st.markdown("**Plantilla (Opcional)**")
@@ -661,11 +668,11 @@ def render_transversales():
             help="Si no subes ninguna, se usará la plantilla oficial SEPE predeterminada"
         )
         if plantilla_file:
-            st.success(" Personalizada")
+            st.success("✓ Personalizada")
         else:
-            st.info(" Por defecto")
+            st.info("ℹ Por defecto")
     
-    with st.expander(" Información", expanded=False):
+    with st.expander("ℹ Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
         
@@ -688,22 +695,22 @@ def render_transversales():
         """)
     
     if not cronograma_file or not control_file:
-        st.info(" Sube el cronograma y control de tareas para continuar")
+        st.info("ℹ Sube el cronograma y control de tareas para continuar")
         return
     
     st.markdown("---")
     
     try:
-        with st.spinner(' Procesando archivos...'):
-            from transversales_processor import TransversalesProcessor
+        with st.spinner('⏳ Procesando archivos...'):
+            from .transversales_processor import TransversalesProcessor
             
             processor = TransversalesProcessor()
             cronograma_file.seek(0)
             control_file.seek(0)
             datos = processor.cargar_datos(control_file.read(), cronograma_file.read())
         
-        st.success(" Datos procesados correctamente")
-        st.markdown("### Resumen del Curso")
+        st.success("✅ Datos procesados correctamente")
+        st.markdown("### 📊 Resumen del Curso")
         
         with st.expander("Ver datos extraídos", expanded=True):
 
@@ -751,9 +758,9 @@ def render_transversales():
             st.dataframe(df, use_container_width=True, hide_index=True)
         
         st.markdown("---")
-        st.markdown("### Generar Acta Transversal")
+        st.markdown("### 🚀 Generar Acta Transversal")
         
-        if st.button(" Generar Acta Transversal (FCOO03)", 
+        if st.button("🎓 Generar Acta Transversal (FCOO03)", 
                     type="primary", 
                     use_container_width=True,
                     key="desempleados_transversal_generar"):
@@ -761,18 +768,18 @@ def render_transversales():
                 if plantilla_file:
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
-                    st.info(" Usando plantilla personalizada")
+                    st.info("ℹ Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_transversal_por_defecto()
                     if plantilla_bytes:
-                        st.info(" Usando plantilla oficial SEPE predeterminada")
+                        st.info("ℹ Usando plantilla oficial SEPE predeterminada")
                     else:
-                        st.error(" No se encontró la plantilla predeterminada")
-                        st.warning(" Sube una plantilla manualmente")
+                        st.error("❌ No se encontró la plantilla predeterminada")
+                        st.warning("⚠ Sube una plantilla manualmente")
                         return
                 
-                with st.spinner(' Generando acta transversal...'):
-                    from word_generator_transversal import WordGeneratorTransversal
+                with st.spinner('⏳ Generando acta transversal...'):
+                    from .word_generator_transversal import WordGeneratorTransversal
                     
                     gen = WordGeneratorTransversal(plantilla_bytes)
                     doc = gen.generar_acta(datos)
@@ -781,18 +788,18 @@ def render_transversales():
                     st.session_state['nombre_acta_transversal_desempleados'] = f"Acta_Transversal_FCOO03_{datos['campo_2_accion'].replace('/', '_')}.docx"
                 
                 st.balloons()
-                st.success(" ¡Acta transversal generada correctamente!")
+                st.success("✅ ¡Acta transversal generada correctamente!")
                 
             except Exception as e:
-                st.error(f" Error generando acta: {str(e)}")
+                st.error(f"❌ Error generando acta: {str(e)}")
                 st.exception(e)
         
         if 'acta_transversal_desempleados' in st.session_state:
             st.markdown("---")
-            st.markdown("### Descargar")
+            st.markdown("### 📥 Descargar")
             
             st.download_button(
-                label=" Descargar Acta Transversal",
+                label="📥 Descargar Acta Transversal",
                 data=st.session_state['acta_transversal_desempleados'],
                 file_name=st.session_state['nombre_acta_transversal_desempleados'],
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -802,7 +809,7 @@ def render_transversales():
             )
     
     except Exception as e:
-        st.error(f" Error procesando archivos: {str(e)}")
+        st.error(f"❌ Error procesando archivos: {str(e)}")
         st.exception(e)
 
 
