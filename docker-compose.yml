@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  smartmind:
+    build: .
+    container_name: smartmind-app
+    ports:
+      - "8501:8501"
+    volumes:
+      # Descomentar la siguiente línea para desarrollo (auto-reload)
+      # - .:/app
+      # Volumen para persistir datos si es necesario
+      - smartmind_data:/app/data
+    environment:
+      - PYTHONUNBUFFERED=1
+    restart: unless-stopped
+    # Límites de recursos (opcional)
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+volumes:
+  smartmind_data:
