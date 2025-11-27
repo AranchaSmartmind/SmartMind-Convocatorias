@@ -17,6 +17,14 @@ SECCIONES = {
     "Cierre Mes": "Documentación de cierre mensual.",
 }
 
+SECCIONES = {
+    "Captación": "Gestión de candidatos y procesos de selección",
+    "Inicio": "Inicio de curso y documentación inicial",
+    "Fin": "Finalización de curso y cierre de expedientes",
+    "Evaluación": "Evaluación de alumnos y seguimiento académico",
+    "Cierre Mes": "Generación automática de partes mensuales de asistencia"  # AÑADIR ESTA LÍNEA
+}
+
 TESSERACT_PATHS = [
     r'C:\Program Files\Tesseract-OCR\tesseract.exe',
     r'C:\Program Files (x86)\Tesseract-OCR\tesseract.exe',
