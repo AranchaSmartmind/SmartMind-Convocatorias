@@ -144,4 +144,6 @@ archivos_salida/
 
 # OS
 .DS_Store
-Thumbs.db
+Thumbs.dbsmartmind.tar
+smartmind-nuevo.tar
+*.tar
