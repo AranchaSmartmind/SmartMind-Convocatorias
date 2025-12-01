@@ -1,137 +1,240 @@
 import os
-from docx import Document
+# Añadir poppler al PATH del proceso de Python
+poppler_path = r"C:\Users\Arancha\Desktop\Arancha\poppler-24.02.0\Library\bin"
+os.environ["PATH"] = poppler_path + os.pathsep + os.environ["PATH"]
 
-def construir_observaciones(ayudas, dias_aula, dias_empresa, justificantes, dias_lectivos, faltas=0):
-    partes = []
+
+from docx import Document
+from docx.shared import Pt
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+import os
+
+
+def construir_observaciones(ayudas, dias_aula, dias_empresa, justificantes, dias_lectivos, faltas):
+    """Construye el texto de observaciones para un alumno"""
+    observaciones = []
     
     if ayudas:
-        if 'Discapacidad' in ayudas:
-            if len(ayudas) == 1:
-                partes.append(f"Discapacidad+{dias_lectivos}")
-            else:
-                otras = [a for a in ayudas if a != 'Discapacidad']
-                texto_otras = '+ '.join(otras)
-                partes.append(f"{texto_otras}+ Discapacidad: {dias_lectivos}")
-        else:
-            texto_ayudas = '+ '.join(ayudas)
-            partes.append(f"{texto_ayudas}: {dias_lectivos}")
+        for ayuda in ayudas:
+            if isinstance(ayuda, dict):
+                tipo = ayuda.get('tipo', '')
+                if tipo:
+                    observaciones.append(tipo)
+            elif isinstance(ayuda, str):
+                observaciones.append(ayuda)
     
-    if dias_aula > 0:
-        partes.append(f"{dias_aula} dias aula")
+    if dias_empresa > 0:
+        observaciones.append(f"Empresa: {dias_empresa} días")
     
     if justificantes > 0:
-        if justificantes == 1:
-            partes.append("1 falta justificada")
-        else:
-            partes.append(f"{justificantes} faltas justificadas")
+        observaciones.append(f"{justificantes} faltas justificadas")
     
-    return ' '.join(partes) if partes else ''
+    return " / ".join(observaciones) if observaciones else ""
 
-def formatear_nombre_oficial(nombre_completo):
+
+def formatear_nombre_alumno(nombre_completo):
     """
-    Convierte 'APELLIDOS, NOMBRE' a 'NOMBRE APELLIDOS'
-    Ejemplo: 'BRAÑA MANCHADO, NURIA' -> 'NURIA BRAÑA MANCHADO'
+    Convierte "APELLIDO1 APELLIDO2, NOMBRE" a "NOMBRE APELLIDO1 APELLIDO2"
+    
+    Ejemplos:
+        "GARCÍA PÉREZ, MARÍA" → "MARÍA GARCÍA PÉREZ"
+        "LÓPEZ, JUAN" → "JUAN LÓPEZ"
     """
     if ',' in nombre_completo:
         partes = nombre_completo.split(',')
         apellidos = partes[0].strip()
-        nombre = partes[1].strip()
-        return f"{nombre} {apellidos}"
-    return nombre_completo
+        nombre = partes[1].strip() if len(partes) > 1 else ''
+        return f"{nombre} {apellidos}".strip()
+    else:
+        # Si no tiene coma, se asume que ya está en el formato correcto
+        return nombre_completo.strip()
 
-def rellenar_template(template_path, datos):
+
+def generar_parte_mensual(template_path, output_path, datos_documento):
+    """
+    Genera el parte mensual SOLO rellenando la tabla de alumnos
+    La parte superior queda como está en el template (SIN valores por defecto)
+    """
+    
     try:
+        print("\n" + "="*80)
+        print("GENERACIÓN DEL PARTE MENSUAL - SOLO TABLA ALUMNOS")
+        print("="*80)
+        
+        print(f"\n📂 Cargando template: {template_path}")
         doc = Document(template_path)
         
-        if not doc.tables:
-            print("Error: No se encontro tabla")
-            return None
-        
-        table = doc.tables[0]
-        
-        # FILA 0: Año Nº de
-        table.rows[0].cells[10].text = datos['numero_curso']
-        
-        # FILA 1: Especialidad (ocupa múltiples celdas combinadas)
-        especialidad = datos['especialidad']
-        for i in range(1, 11):
-            table.rows[1].cells[i].text = especialidad
-        
-        # FILA 2: Centro (línea completa)
-        centro = datos.get('centro', 'INTERPROS NEXT GENERATION SLU')
-        for i in range(1, 11):
-            table.rows[2].cells[i].text = centro
-        
-        # FILA 3: Mes y información de horas
-        mes = datos['mes']
-        dias_lectivos = datos['dias_lectivos']
-        horas_empresa = datos.get('horas_empresa', 21)
-        horas_aula = datos.get('horas_aula', 2)
-        
-        table.rows[3].cells[0].text = f"Mes de {mes}"
-        # La celda combinada con información
-        table.rows[3].cells[1].text = f"23 ({horas_empresa} horas en empresa +{horas_aula}"
-        # "Número de días lectivos" en celdas 5-10
-        texto_dias = f"Número de días lectivos {dias_lectivos} aula)"
-        for i in range(5, 10):
-            table.rows[3].cells[i].text = texto_dias
-        
-        # FILA 4: "LISTADO DEL ALUMNADO" (ya está en template)
-        # FILA 5: Headers (ya están en template)
-        
-        # FILAS 6+: Datos de alumnos
-        for idx, alumno in enumerate(datos['alumnos']):
-            if idx >= 20:
-                break
-            
-            fila_idx = 6 + idx
-            if fila_idx >= len(table.rows):
-                break
-                
-            row = table.rows[fila_idx]
-            
-            # Columna 1: Número de orden
-            row.cells[1].text = str(idx + 1)
-            
-            # Columnas 2-3: Nombre y Apellidos (FORMATO OFICIAL: NOMBRE APELLIDOS)
-            nombre_oficial = formatear_nombre_oficial(alumno['nombre'])
-            row.cells[2].text = nombre_oficial
-            row.cells[3].text = nombre_oficial
-            
-            # Columnas 4-7: NIF
-            dni = alumno.get('dni', '')
-            for i in range(4, 8):
-                row.cells[i].text = dni
-            
-            # Columna 8: Nº de faltas
-            row.cells[8].text = str(alumno['faltas'])
-            
-            # Columnas 9-10: Observaciones
-            obs = alumno['observaciones']
-            row.cells[9].text = obs
-            row.cells[10].text = obs
-        
-        return doc
-    
-    except Exception as e:
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
-
-def generar_parte_mensual(template_path, output_path, datos):
-    try:
-        doc = rellenar_template(template_path, datos)
-        
-        if doc is None:
+        if len(doc.tables) == 0:
+            print("❌ No hay tablas")
             return False
         
+        tabla = doc.tables[0]
+        print(f"✅ Tabla: {len(tabla.rows)} filas x {len(tabla.columns)} columnas")
+        
+        # Extraer datos (SIN valores por defecto)
+        alumnos = datos_documento.get('alumnos', [])
+        
+        print(f"\n📋 Datos:")
+        print(f"  Alumnos a procesar: {len(alumnos)}")
+        print(f"\n⚠️  NOTA: La cabecera del documento NO se modifica automáticamente")
+        print(f"         Debes rellenar manualmente: expediente, mes, días lectivos")
+        
+        # Buscar fila de encabezados
+        fila_inicio_alumnos = None
+        for i in range(10):
+            for j in range(len(tabla.rows[i].cells)):
+                if 'Nombre y Apellidos' in tabla.rows[i].cells[j].text:
+                    fila_inicio_alumnos = i + 1
+                    print(f"\n✅ Fila de datos de alumnos: {fila_inicio_alumnos}")
+                    break
+            if fila_inicio_alumnos:
+                break
+        
+        if not fila_inicio_alumnos:
+            print("❌ No se encontró la fila de encabezados")
+            return False
+        
+        # Buscar columnas
+        fila_encabezado = tabla.rows[fila_inicio_alumnos - 1]
+        
+        col_nombre = None
+        col_nif = None
+        col_faltas = None
+        col_obs = None
+        
+        for j, celda_enc in enumerate(fila_encabezado.cells):
+            texto_enc = celda_enc.text.strip()
+            if 'Nombre y Apellidos' in texto_enc:
+                col_nombre = j
+                print(f"✅ Columna Nombre: {j}")
+            elif 'NIF' in texto_enc:
+                col_nif = j
+                print(f"✅ Columna NIF: {j}")
+            elif 'faltas' in texto_enc.lower() and 'Observ' not in texto_enc:
+                col_faltas = j
+                print(f"✅ Columna Faltas: {j}")
+            elif 'Observaciones' in texto_enc:
+                col_obs = j
+                print(f"✅ Columna Observaciones: {j}")
+        
+        # Verificar que se encontraron las columnas
+        if col_nombre is None or col_nif is None or col_faltas is None or col_obs is None:
+            print("❌ No se encontraron todas las columnas necesarias")
+            return False
+        
+        # RELLENAR ALUMNOS
+        print(f"\n👥 Rellenando tabla de alumnos...")
+        print("-" * 100)
+        
+        alumnos_procesados = 0
+        
+        for idx, alumno in enumerate(alumnos[:20]):  # Máximo 20 alumnos
+            fila_idx = fila_inicio_alumnos + idx
+            if fila_idx >= len(tabla.rows):
+                print(f"⚠️  Se alcanzó el límite de filas de la tabla")
+                break
+            
+            fila = tabla.rows[fila_idx]
+            
+            try:
+                # Obtener datos del alumno
+                nombre_original = alumno.get('nombre', '')
+                dni = alumno.get('dni', alumno.get('nif', ''))
+                faltas = alumno.get('faltas', 0)
+                observaciones = alumno.get('observaciones', '')
+                
+                # Formatear nombre: de "APELLIDO1 APELLIDO2, NOMBRE" a "NOMBRE APELLIDO1 APELLIDO2"
+                nombre_formateado = formatear_nombre_alumno(nombre_original)
+                
+                # Escribir NOMBRE
+                celda = fila.cells[col_nombre]
+                celda.text = nombre_formateado
+                for p in celda.paragraphs:
+                    for run in p.runs:
+                        run.font.size = Pt(9)
+                
+                # Escribir DNI/NIF
+                celda = fila.cells[col_nif]
+                celda.text = dni
+                for p in celda.paragraphs:
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    for run in p.runs:
+                        run.font.size = Pt(9)
+                
+                # Escribir FALTAS
+                celda = fila.cells[col_faltas]
+                celda.text = str(faltas)
+                for p in celda.paragraphs:
+                    p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+                    for run in p.runs:
+                        run.font.size = Pt(9)
+                
+                # Escribir OBSERVACIONES
+                celda = fila.cells[col_obs]
+                celda.text = observaciones
+                for p in celda.paragraphs:
+                    for run in p.runs:
+                        run.font.size = Pt(8)
+                
+                # Log
+                nombre_log = nombre_formateado[:40]
+                obs_log = observaciones[:35] if observaciones else '-'
+                print(f"{idx+1:2}. {nombre_log:40} | {dni:12} | Faltas: {faltas:2} | {obs_log}")
+                
+                alumnos_procesados += 1
+                
+            except Exception as e:
+                print(f"❌ Error con alumno {idx+1}: {e}")
+                import traceback
+                traceback.print_exc()
+        
+        print("-" * 100)
+        print(f"✅ {alumnos_procesados} alumnos procesados correctamente")
+        
+        # Guardar
+        print(f"\n💾 Guardando documento...")
         doc.save(output_path)
-        print(f"Documento generado: {output_path}")
-        return True
+        
+        if os.path.exists(output_path):
+            tamanio = os.path.getsize(output_path)
+            if tamanio > 10000:
+                print(f"✅ Documento guardado: {output_path}")
+                print(f"📊 Tamaño: {tamanio:,} bytes")
+                return True
+            else:
+                print(f"❌ Archivo muy pequeño ({tamanio} bytes)")
+                return False
+        else:
+            print("❌ No se pudo guardar")
+            return False
         
     except Exception as e:
-        print(f"Error: {e}")
+        print(f"\n❌ ERROR GENERAL: {e}")
         import traceback
         traceback.print_exc()
         return False
+
+
+if __name__ == "__main__":
+    # Prueba con formato real
+    datos = {
+        'alumnos': [
+            {
+                'nombre': 'GARCÍA PÉREZ, MARÍA',  # Se convertirá a: MARÍA GARCÍA PÉREZ
+                'dni': '12345678A',
+                'faltas': 2,
+                'observaciones': 'Beca de transporte'
+            },
+            {
+                'nombre': 'LÓPEZ SÁNCHEZ, JUAN CARLOS',  # Se convertirá a: JUAN CARLOS LÓPEZ SÁNCHEZ
+                'dni': '87654321B',
+                'faltas': 0,
+                'observaciones': 'Empresa: 4 días'
+            },
+        ]
+    }
+    
+    template = r"C:\Users\Arancha\Desktop\Arancha\Repos\sections\evaluacion\cierre_mes\template_original.docx"
+    output = r"C:\Users\Arancha\Desktop\Arancha\Repos\PRUEBA_FORMATO_NOMBRE.docx"
+    
+    generar_parte_mensual(template, output, datos)

@@ -9,11 +9,11 @@ from collections import defaultdict
 from pdf2image import convert_from_path
 import pytesseract
 import os
+
 os.environ['TESSDATA_PREFIX'] = r'C:\Program Files\Tesseract-OCR\tessdata'
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
-# AGREGAR ESTAS DOS LÍNEAS:
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+POPPLER_PATH = r'C:\Users\Arancha\Desktop\Arancha\poppler-24.02.0\Library\bin'
 
 def extraer_texto_con_ocr(pdf_path, dpi=300):
     """
@@ -27,7 +27,7 @@ def extraer_texto_con_ocr(pdf_path, dpi=300):
         Lista de textos extraídos por página
     """
     try:
-        images = convert_from_path(pdf_path, dpi=dpi)
+        images = convert_from_path(pdf_path, dpi=dpi, poppler_path=POPPLER_PATH)
         textos_por_pagina = []
         
         for image in images:
@@ -84,7 +84,6 @@ def extraer_fechas_de_pdf(pdf_path):
         textos = extraer_texto_con_ocr(pdf_path, dpi=300)
         
         for texto in textos:
-            # PRIORIDAD 1: Buscar "Fecha de inicio" y "Fecha de finalización"
             match_inicio = re.search(
                 r'Fecha\s+de\s+inicio:\s+(\d{1,2})/(\d{1,2})/(\d{4})',
                 texto,
@@ -114,7 +113,6 @@ def extraer_fechas_de_pdf(pdf_path):
                 except:
                     pass
             
-            # PRIORIDAD 2: Buscar patrón SEMANA DEL DD/MM AL DD/MM/YYYY
             patron_semana = r'SEMANA\s+DEL\s+(\d{1,2})/(\d{1,2})\s+AL\s+(\d{1,2})/(\d{1,2})/(\d{4})'
             matches = re.finditer(patron_semana, texto, re.IGNORECASE)
             
@@ -123,8 +121,7 @@ def extraer_fechas_de_pdf(pdf_path):
                 try:
                     fecha_inicio = datetime(int(año), int(mes1), int(dia1))
                     fecha_fin = datetime(int(año), int(mes2), int(dia2))
-                    
-                    # Validar rango razonable y meses válidos
+
                     if (fecha_fin - fecha_inicio).days <= 14 and fecha_inicio.month <= 12 and fecha_fin.month <= 12:
                         fechas.append(fecha_inicio)
                         fechas.append(fecha_fin)
@@ -166,23 +163,20 @@ def contar_dias_con_firmas_por_alumno(pdf_path):
                     fecha_inicio = datetime(int(año), int(mes1), int(dia1))
                     fecha_fin = datetime(int(año), int(mes2), int(dia2))
                     
-                    # Extraer contexto alrededor de la semana
                     inicio_match = semana_match.start()
                     fin_contexto = min(inicio_match + 500, len(texto))
                     contexto = texto[inicio_match:fin_contexto]
-                    
-                    # Buscar horarios (HH:MM)
+
                     horarios = re.findall(r'\b(\d{1,2}):(\d{2})\b', contexto)
                     horarios_validos = [
                         (h, m) for h, m in horarios
                         if 0 <= int(h) <= 23 and 0 <= int(m) <= 59
                     ]
-                    
-                    # Si hay horarios, contar días laborables
+
                     if len(horarios_validos) >= 2:
                         current = fecha_inicio
                         while current <= fecha_fin:
-                            if current.weekday() < 5:  # Lunes a Viernes
+                            if current.weekday() < 5:
                                 dias_con_firma += 1
                             current += timedelta(days=1)
                 except:
@@ -217,7 +211,6 @@ def calcular_dias_lectivos_y_asistencias(firmas_pdfs):
     todas_las_fechas = []
     asistencias_por_alumno = defaultdict(lambda: {'dias_empresa': 0, 'dias_aula': 0})
     
-    # Procesar cada PDF
     for idx, pdf_path in enumerate(firmas_pdfs, 1):
         if not os.path.exists(pdf_path):
             print(f"Advertencia: No encontrado {pdf_path}")
@@ -225,16 +218,13 @@ def calcular_dias_lectivos_y_asistencias(firmas_pdfs):
         
         nombre_pdf = os.path.basename(pdf_path)
         print(f"\n[{idx}/{len(firmas_pdfs)}] Procesando: {nombre_pdf}")
-        
-        # Determinar si es PDF de aula o empresa
+
         es_aula = 'ParteFirma_30y31' in nombre_pdf or 'aula' in nombre_pdf.lower()
-        
-        # Extraer fechas
+
         fechas = extraer_fechas_de_pdf(pdf_path)
         todas_las_fechas.extend(fechas)
         print(f"    {len(fechas)} fechas detectadas")
-        
-        # Contar días por alumno
+
         dias_por_alumno = contar_dias_con_firmas_por_alumno(pdf_path)
         print(f"    {len(dias_por_alumno)} alumnos procesados")
         
@@ -244,8 +234,7 @@ def calcular_dias_lectivos_y_asistencias(firmas_pdfs):
             else:
                 asistencias_por_alumno[nombre]['dias_empresa'] += dias
             print(f"       - {nombre[:35]}: {dias} días ({'aula' if es_aula else 'empresa'})")
-    
-    # Calcular días lectivos totales
+
     if todas_las_fechas:
         fecha_min = min(todas_las_fechas)
         fecha_max = max(todas_las_fechas)
@@ -253,8 +242,7 @@ def calcular_dias_lectivos_y_asistencias(firmas_pdfs):
         print(f"\nPERIODO COMPLETO:")
         print(f"    Desde: {fecha_min.strftime('%d/%m/%Y')}")
         print(f"    Hasta: {fecha_max.strftime('%d/%m/%Y')}")
-        
-        # Contar días laborables
+
         dias_lectivos = 0
         current = fecha_min
         while current <= fecha_max:
@@ -266,8 +254,7 @@ def calcular_dias_lectivos_y_asistencias(firmas_pdfs):
     else:
         dias_lectivos = 0
         print("Advertencia: No se encontraron fechas")
-    
-    # Calcular faltas
+
     faltas_por_alumno = {}
     for nombre, datos in asistencias_por_alumno.items():
         total_asistido = datos['dias_empresa'] + datos['dias_aula']
