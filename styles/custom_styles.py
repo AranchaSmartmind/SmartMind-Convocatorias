@@ -176,13 +176,26 @@ label {
     font-weight: 500 !important;
 }
 
+/* FILE UPLOADER STYLES - COMPACTOS */
 [data-testid="stFileUploader"] > label {
     color: var(--text-bright) !important;
     font-weight: 600 !important;
+    font-size: 0.85rem !important;
+    margin-bottom: 0.3rem !important;
+    display: block !important;
 }
 
 [data-testid="stFileUploader"] section {
     background-color: white !important;
+    padding: 0.6rem 0.8rem !important;
+    min-height: 70px !important;
+    max-height: 100px !important;
+    border-radius: 8px !important;
+}
+
+[data-testid="stFileUploader"] section > div {
+    padding: 0.3rem !important;
+    min-height: 50px !important;
 }
 
 [data-testid="stFileUploader"] section span,
@@ -190,17 +203,21 @@ label {
 [data-testid="stFileUploader"] section div {
     color: #1c2331 !important;
     font-weight: 500 !important;
+    font-size: 0.8rem !important;
+    line-height: 1.3 !important;
 }
 
 [data-testid="stFileUploader"] section > div > div > div > span {
     color: #0b0e14 !important;
     font-weight: 600 !important;
+    font-size: 0.85rem !important;
 }
 
 [data-testid="stFileUploader"] section small,
 [data-testid="stFileUploader"] small {
     color: #4a5568 !important;
     font-weight: 400 !important;
+    font-size: 0.7rem !important;
 }
 
 [data-testid="stFileUploader"] button {
@@ -208,11 +225,20 @@ label {
     border-color: #1c2331 !important;
     background-color: transparent !important;
     font-weight: 600 !important;
+    font-size: 0.75rem !important;
+    padding: 0.4rem 0.8rem !important;
+    min-height: auto !important;
 }
 
 [data-testid="stFileUploader"] button:hover {
     background-color: rgba(28, 35, 49, 0.1) !important;
     color: #0b0e14 !important;
+}
+
+/* Iconos más pequeños */
+[data-testid="stFileUploader"] svg {
+    width: 30px !important;
+    height: 30px !important;
 }
 
 button[data-baseweb="tab"] {
@@ -451,4 +477,3 @@ body:has([data-testid="collapsedControl"]) .robot-assistant::after {{
     <img src="data:image/png;base64,{image_base64}" alt="Robot Asistente">
 </div>
 """
-
