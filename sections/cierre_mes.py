@@ -1,12 +1,12 @@
 """
-Sección de Cierre Mensual - VERSIÓN FINAL CORREGIDA
+Sección de Cierre Mensual - CORREGIDO
 """
 import streamlit as st
 import os
 import tempfile
 
 def cargar_template_cierre_mes_por_defecto():
-    """Carga la plantilla de cierre mensual integrada en la aplicación"""
+    """Carga la plantilla de cierre mensual"""
     try:
         plantilla_cierre = os.path.join(
             os.path.dirname(os.path.abspath(__file__)), 
@@ -30,28 +30,22 @@ def cargar_template_cierre_mes_por_defecto():
         return None
         
     except Exception as e:
-        print(f"Error cargando plantilla cierre mes: {e}")
+        print(f"Error cargando plantilla: {e}")
         return None
 
 def render_cierre_mes():
-    """
-    Renderiza la interfaz de Cierre Mensual
-    """
+    """Renderiza la interfaz de Cierre Mensual"""
     from sections.evaluacion.cierre_mes.procesamiento_datos import (
         extraer_becas_ayudas_tabla,
         extraer_justificantes_mejorado,
         calcular_dias_lectivos_y_faltas_corregido,
-        construir_observaciones_completas
-    )
-    from sections.evaluacion.cierre_mes.procesamiento_datos import (
-        obtener_mes_anterior,
-        extraer_datos_curso_pdf,
+        construir_observaciones_completas,
         extraer_alumnos_excel
     )
     from sections.evaluacion.cierre_mes.generacion_word import generar_parte_mensual
     from sections.evaluacion.cierre_mes.utilidades import buscar_coincidencia
     
-    tab1, tab2, tab3 = st.tabs(["📤 Subir Archivos", "⚙️ Procesar", "📥 Descargar"])
+    tab1, tab2, tab3 = st.tabs(["Subir Archivos", "Procesar", "Descargar"])
     
     with tab1:
         st.subheader("Archivos necesarios")
@@ -59,19 +53,19 @@ def render_cierre_mes():
         col1, col2 = st.columns(2)
         
         with col1:
-            st.markdown("**📊 Listado de Alumnos (Excel)**")
+            st.markdown("**Listado de Alumnos (Excel)**")
             excel_alumnos = st.file_uploader(
                 "Archivo Excel con datos de alumnos",
                 type=['xlsx'],
                 key="cm_excel"
             )
             if excel_alumnos:
-                st.success("✅ Cargado")
+                st.success("Cargado")
             else:
-                st.warning("⚠️ Requerido")
+                st.warning("Requerido")
         
         with col2:
-            st.markdown("**📝 Hojas de Firmas (PDFs)**")
+            st.markdown("**Hojas de Firmas (PDFs)**")
             pdfs_firmas = st.file_uploader(
                 "Uno o más PDFs de firmas",
                 type=['pdf'],
@@ -79,58 +73,50 @@ def render_cierre_mes():
                 key="cm_firmas"
             )
             if pdfs_firmas:
-                st.success(f"✅ {len(pdfs_firmas)} archivos")
+                st.success(f"{len(pdfs_firmas)} archivos")
             else:
-                st.warning("⚠️ Requerido")
+                st.warning("Requerido")
         
         col3, col4 = st.columns(2)
         
         with col3:
-            st.markdown("**💰 Becas y Ayudas (PDF)**")
+            st.markdown("**Becas y Ayudas (PDF)**")
             pdf_becas = st.file_uploader(
                 "PDF de Otorgamiento",
                 type=['pdf'],
                 key="cm_becas"
             )
             if pdf_becas:
-                st.success("✅ Cargado")
+                st.success("Cargado")
             else:
-                st.warning("⚠️ Requerido")
+                st.warning("Requerido")
         
         with col4:
-            st.markdown("**🏥 Justificantes (PDF)**")
+            st.markdown("**Justificantes (PDF)**")
             pdf_justificantes = st.file_uploader(
                 "PDF de justificaciones",
                 type=['pdf'],
                 key="cm_just"
             )
             if pdf_justificantes:
-                st.success("✅ Cargado")
+                st.success("Cargado")
             else:
-                st.warning("⚠️ Requerido")
+                st.warning("Requerido")
         
         archivos_completos = all([excel_alumnos, pdf_becas, pdf_justificantes, pdfs_firmas])
         
         if archivos_completos:
-            st.success("✅ Todos los archivos listos")
+            st.success("Todos los archivos listos")
         else:
-            st.info("💡 Sube todos los archivos para continuar")
+            st.info("Sube todos los archivos para continuar")
     
     with tab2:
         if not archivos_completos:
-            st.warning("⚠️ Primero sube todos los archivos en la pestaña anterior")
+            st.warning("Primero sube todos los archivos en la pestaña anterior")
         else:
-            # CAMPO MANUAL PARA DÍAS LECTIVOS
-            st.info("💡 Ingresa el total de días lectivos del mes")
-            dias_lectivos_manual = st.number_input(
-                "Días lectivos del mes (REQUERIDO)",
-                min_value=1,
-                max_value=31,
-                value=23,
-                help="Ejemplo: para Julio con 23 días lectivos, ingresa 23"
-            )
+            st.info("El sistema detectará automáticamente los días lectivos")
             
-            if st.button("🚀 Iniciar Procesamiento", type="primary", use_container_width=True):
+            if st.button("Iniciar Procesamiento", type="primary", use_container_width=True):
                 with st.spinner("Procesando cierre mensual..."):
                     progress = st.progress(0)
                     status = st.empty()
@@ -138,7 +124,7 @@ def render_cierre_mes():
                     try:
                         temp_dir = tempfile.mkdtemp()
                         
-                        status.text("💾 Guardando archivos...")
+                        status.text("Guardando archivos...")
                         progress.progress(5)
                         
                         # Guardar archivos
@@ -157,7 +143,7 @@ def render_cierre_mes():
                         template_path = os.path.join(temp_dir, 'template.docx')
                         template_bytes = cargar_template_cierre_mes_por_defecto()
                         if not template_bytes:
-                            st.error("❌ No se pudo cargar la plantilla")
+                            st.error("No se pudo cargar la plantilla")
                             return
                         
                         with open(template_path, 'wb') as f:
@@ -173,29 +159,28 @@ def render_cierre_mes():
                         output_path = os.path.join(temp_dir, 'parte_mensual.docx')
                         
                         # PROCESAMIENTO
-                        status.text("📋 Extrayendo alumnos del Excel...")
+                        status.text("Extrayendo alumnos del Excel...")
                         progress.progress(15)
                         alumnos_excel = extraer_alumnos_excel(excel_path)
-                        print(f"✅ {len(alumnos_excel)} alumnos en Excel")
                         
-                        status.text("💰 Extrayendo becas y ayudas...")
+                        status.text("Extrayendo becas y ayudas...")
                         progress.progress(30)
-                        ayudas_dict = extraer_becas_ayudas_tabla(becas_path)
+                        # CORREGIDO: Ahora pasa alumnos_excel como segundo parámetro
+                        ayudas_dict = extraer_becas_ayudas_tabla(becas_path, alumnos_excel)
                         
-                        status.text("🏥 Extrayendo justificantes...")
+                        status.text("Extrayendo justificantes...")
                         progress.progress(45)
                         justificantes_dict = extraer_justificantes_mejorado(justif_path)
                         
-                        status.text("📝 Contando días con firma y calculando ausencias...")
+                        status.text("Calculando días lectivos y faltas...")
                         progress.progress(60)
                         
-                        # PASAR días_lectivos_manual como parámetro
                         dias_lectivos, ausencias_dict, dias_con_firma_dict = calcular_dias_lectivos_y_faltas_corregido(
-                            firmas_paths, 
-                            dias_lectivos_manual
+                            firmas_paths,
+                            alumnos_excel
                         )
                         
-                        status.text("📊 Construyendo observaciones...")
+                        status.text("Construyendo observaciones...")
                         progress.progress(75)
                         
                         print("\n" + "="*80)
@@ -207,33 +192,27 @@ def render_cierre_mes():
                             nombre = alumno_excel['nombre_completo']
                             dni = alumno_excel['dni']
                             
-                            # Buscar ausencias (días sin firma)
-                            ausencias = buscar_coincidencia(nombre, ausencias_dict)
-                            if ausencias is None:
-                                ausencias = 0
+                            ausencias = ausencias_dict.get(nombre, 0)
                             
-                            print(f"\n👤 {nombre}")
+                            print(f"\n{nombre}")
                             print(f"   DNI: {dni}")
-                            print(f"   Días ausente (sin firma): {ausencias}")
+                            print(f"   Faltas: {ausencias}")
                             
-                            # Construir observaciones
                             observaciones = construir_observaciones_completas(
                                 nombre,
                                 ayudas_dict,
-                                dias_con_firma_dict,  # Usar días CON firma para observaciones
+                                dias_con_firma_dict,
                                 justificantes_dict
                             )
                             
                             alumnos_finales.append({
                                 'nombre': nombre,
                                 'dni': dni,
-                                'faltas': ausencias,  # Aquí van los días AUSENTE (sin firma)
+                                'faltas': ausencias,
                                 'observaciones': observaciones
                             })
-                            
-                            print(f"   Observaciones: {observaciones[:50]}...")
                         
-                        status.text("📄 Generando documento Word...")
+                        status.text("Generando documento Word...")
                         progress.progress(90)
                         
                         datos_documento = {
@@ -246,37 +225,36 @@ def render_cierre_mes():
                         status.empty()
                         
                         if exito and os.path.exists(output_path):
-                            st.success("✅ Procesamiento completado")
+                            st.success("Procesamiento completado")
                             
                             with open(output_path, 'rb') as f:
                                 st.session_state['cm_documento'] = f.read()
                             st.session_state['cm_nombre'] = 'parte_mensual.docx'
                             
-                            # Mostrar resumen
                             st.info(f"""
-                            📊 **Resumen:**
-                            - Días lectivos: {dias_lectivos}
+                            Resumen:
+                            - Días lectivos detectados: {dias_lectivos}
                             - Alumnos procesados: {len(alumnos_finales)}
                             - Con ayudas: {len(ayudas_dict)}
                             - Con justificantes: {len(justificantes_dict)}
                             """)
                             
-                            st.info("➡️ Ve a la pestaña **Descargar**")
+                            st.info("Ve a la pestaña Descargar")
                         else:
-                            st.error("❌ Error generando el documento")
+                            st.error("Error generando el documento")
                             
                     except Exception as e:
-                        st.error(f"❌ Error: {str(e)}")
+                        st.error(f"Error: {str(e)}")
                         with st.expander("Ver detalles"):
                             import traceback
                             st.code(traceback.format_exc())
     
     with tab3:
         if 'cm_documento' in st.session_state:
-            st.success("✅ Documento listo para descargar")
+            st.success("Documento listo para descargar")
             
             st.download_button(
-                label="📥 Descargar Parte Mensual",
+                label="Descargar Parte Mensual",
                 data=st.session_state['cm_documento'],
                 file_name=st.session_state['cm_nombre'],
                 mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
@@ -284,9 +262,9 @@ def render_cierre_mes():
                 use_container_width=True
             )
             
-            if st.button("🔄 Nuevo Proceso", use_container_width=True):
+            if st.button("Nuevo Proceso", use_container_width=True):
                 del st.session_state['cm_documento']
                 del st.session_state['cm_nombre']
                 st.rerun()
         else:
-            st.info("💡 No hay documento generado todavía")
+            st.info("No hay documento generado todavía")
