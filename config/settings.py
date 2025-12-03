@@ -15,6 +15,7 @@ SECCIONES = {
     "Fin": "Documentación de finalización de formación en empresa.",
     "Evaluación": "Documentos de evaluación del curso.",
     "Cierre Mes": "Documentación de cierre mensual.",
+    "Memorias": "Análisis automático de encuestas de satisfacción"
 }
 
 SECCIONES = {
@@ -22,7 +23,8 @@ SECCIONES = {
     "Inicio": "Inicio de curso y documentación inicial",
     "Fin": "Finalización de curso y cierre de expedientes",
     "Evaluación": "Evaluación de alumnos y seguimiento académico",
-    "Cierre Mes": "Generación automática de partes mensuales de asistencia"  # AÑADIR ESTA LÍNEA
+    "Cierre Mes": "Generación automática de partes mensuales de asistencia",
+    "Memorias": "Análisis automático de encuestas de satisfacción"
 }
 
 TESSERACT_PATHS = [

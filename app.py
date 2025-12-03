@@ -25,10 +25,9 @@ try:
     from sections.fin import render_fin
     from sections.inicio import render_inicio
     from sections.captacion import render_captacion
-<<<<<<< HEAD
-=======
-    from sections.cierre_mes import render_cierre_mes       
->>>>>>> 46abacd1f2b623aa70848020e8439f1b1427c542
+    from sections.cierre_mes import render_cierre_mes
+    from sections.memorias import render_memorias
+
 except ImportError as e:
     st.error(f"Error al importar secciones: {e}")
     st.stop()
@@ -67,6 +66,11 @@ with st.sidebar:
     if st.button("Cierre Mes", key="nav_cierre", use_container_width=True):
         st.session_state.seccion_actual = "Cierre Mes"
         st.rerun()
+    
+    if st.button("Memorias", key="nav_memorias", use_container_width=True):
+        st.session_state.seccion_actual = "Memorias"
+        st.rerun()
+    
 
 if 'seccion_actual' not in st.session_state:
     st.session_state.seccion_actual = 'Inicio'
@@ -94,3 +98,5 @@ elif seccion_actual == "Evaluación":
     render_evaluacion()
 elif seccion_actual == "Cierre Mes":
     render_cierre_mes()
+elif seccion_actual == "Memorias":
+    render_memorias()
