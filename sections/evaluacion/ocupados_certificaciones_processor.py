@@ -1,6 +1,7 @@
 """
 Procesador de datos para Certificaciones de Ocupados
 Extrae información del PDF (justificante) y Excel (calificaciones)
+VERSIÓN FINAL - Búsqueda dinámica sin posiciones fijas
 """
 
 import re
@@ -41,7 +42,7 @@ class CertificacionesOcupadosProcessor:
         Returns:
             Dict con datos del curso y alumnos
         """
-        print(" Extrayendo datos del PDF...")
+        print("Extrayendo datos del PDF...")
         
         with pdfplumber.open(self.pdf_path) as pdf:
             texto_completo = ""
@@ -99,9 +100,9 @@ class CertificacionesOcupadosProcessor:
         
         self.alumnos = participantes
         
-        print(f" Curso: {codigo_curso}")
-        print(f" Módulo: {codigo_modulo}")
-        print(f" Alumnos encontrados: {len(participantes)}")
+        print(f"Curso: {codigo_curso}")
+        print(f"Módulo: {codigo_modulo}")
+        print(f"Alumnos encontrados: {len(participantes)}")
         
         return self.datos_curso
     
@@ -140,14 +141,40 @@ class CertificacionesOcupadosProcessor:
         
         return participantes
     
+    def _buscar_columna_puntuacion(self, df: pd.DataFrame, fila_inicio: int, rango_filas: int = 10) -> Optional[int]:
+        """
+        Busca dinámicamente la columna que contiene 'PUNTUACIÓN FINAL' o 'DEL MÓDULO'
+        
+        Args:
+            df: DataFrame del Excel
+            fila_inicio: Fila desde donde empezar a buscar
+            rango_filas: Cuántas filas buscar
+            
+        Returns:
+            Índice de la columna o None
+        """
+        for offset in range(rango_filas):
+            fila = fila_inicio + offset
+            if fila >= len(df):
+                break
+            
+            for col in range(len(df.columns)):
+                celda = str(df.iloc[fila, col])
+                if 'PUNTUACIÓN FINAL' in celda or 'DEL MÓDULO' in celda:
+                    print(f"  Columna de puntuación encontrada: {col} (fila {fila})")
+                    return col
+        
+        return None
+    
     def extraer_calificaciones_excel(self) -> Dict[str, str]:
         """
         Extrae calificaciones del Excel
+        Búsqueda dinámica de la PUNTUACIÓN FINAL en formato (X.X)
         
         Returns:
             Dict con DNI -> calificación (formato S-9, NS, etc)
         """
-        print("\n Extrayendo calificaciones del Excel...")
+        print("\nExtrayendo calificaciones del Excel...")
 
         df = pd.read_excel(self.excel_path, sheet_name=0, header=None)
         
@@ -156,50 +183,141 @@ class CertificacionesOcupadosProcessor:
         for alumno in self.alumnos:
             dni = alumno['dni']
 
+            # Buscar la fila donde aparece el DNI del alumno
             alumno_fila = None
             for idx, row in df.iterrows():
-                if dni in str(row[0]):
+                # Buscar DNI en cualquier columna de la fila
+                fila_texto = ' '.join([str(cell) for cell in row if pd.notna(cell)])
+                if dni in fila_texto:
                     alumno_fila = idx
+                    print(f"\n{alumno['nombre']} ({dni}) encontrado en fila {idx}")
                     break
             
             if alumno_fila is None:
-                print(f" No se encontró calificación para {alumno['nombre']} ({dni})")
+                print(f"  ADVERTENCIA: No se encontró en Excel")
                 calificaciones[dni] = "S-0"
                 continue
+            
+            # Buscar dinámicamente la columna de PUNTUACIÓN FINAL
+            columna_puntuacion = self._buscar_columna_puntuacion(df, alumno_fila, rango_filas=15)
             
             nota_final = None
             estado = None
             
-            for offset in range(0, 20):
-                fila_buscar = alumno_fila + offset
-                if fila_buscar >= len(df):
-                    break
+            # ESTRATEGIA 1: Si encontramos la columna específica, buscar ahí
+            if columna_puntuacion is not None:
+                print(f"  Buscando en columna {columna_puntuacion}...")
                 
-                val_col21 = str(df.iloc[fila_buscar, 21])
-                val_col24 = str(df.iloc[fila_buscar, 24])
-                
-                if 'APTO' in val_col21 or 'APTO' in val_col24:
-                    if 'NO APTO' in val_col21 or 'NO APTO' in val_col24:
-                        estado = 'NO APTO'
-                    else:
-                        estado = 'APTO'
-
-                    nota_match = re.search(r'(\d+\.?\d*)', val_col21)
-                    if nota_match:
-                        nota_final = float(nota_match.group(1))
+                for offset in range(1, 25):
+                    fila_buscar = alumno_fila + offset
+                    if fila_buscar >= len(df):
+                        break
                     
-                    break
+                    celda = df.iloc[fila_buscar, columna_puntuacion]
+                    
+                    if pd.notna(celda):
+                        celda_str = str(celda).strip()
+                        
+                        # Buscar patrón (X.X) o (X)
+                        match_puntuacion = re.search(r'\((\d+\.?\d*)\)', celda_str)
+                        
+                        if match_puntuacion:
+                            nota_final = float(match_puntuacion.group(1))
+                            print(f"    Fila {fila_buscar}: '{celda_str}' -> Nota: {nota_final}")
+                            
+                            # Verificar estado APTO/NO APTO en filas cercanas
+                            for check_offset in range(-3, 4):
+                                check_fila = fila_buscar + check_offset
+                                if 0 <= check_fila < len(df):
+                                    # Buscar en varias columnas cercanas
+                                    for col_offset in range(-3, 4):
+                                        col_check = columna_puntuacion + col_offset
+                                        if 0 <= col_check < len(df.columns):
+                                            celda_check = str(df.iloc[check_fila, col_check])
+                                            if 'NO APTO' in celda_check:
+                                                estado = 'NO APTO'
+                                                break
+                                            elif 'APTO' in celda_check and estado != 'NO APTO':
+                                                estado = 'APTO'
+                                if estado:
+                                    break
+                            
+                            if not estado:
+                                estado = 'APTO'
+                            
+                            break
+            
+            # ESTRATEGIA 2: Si no encontró en columna específica, búsqueda amplia
+            if nota_final is None:
+                print(f"  Búsqueda amplia en todas las columnas...")
+                
+                for offset in range(1, 30):
+                    fila_buscar = alumno_fila + offset
+                    if fila_buscar >= len(df):
+                        break
+                    
+                    # Concatenar toda la fila
+                    fila_completa = []
+                    for col in range(len(df.columns)):
+                        celda = df.iloc[fila_buscar, col]
+                        if pd.notna(celda):
+                            fila_completa.append(str(celda))
+                    
+                    fila_texto = ' '.join(fila_completa)
+                    
+                    # Buscar líneas que contengan indicadores clave
+                    if any(keyword in fila_texto for keyword in ['PUNTUACIÓN FINAL', 'DEL MÓDULO', 'CALIFICACIÓN FINAL']):
+                        # Extraer todos los números entre paréntesis
+                        numeros = re.findall(r'\((\d+\.?\d*)\)', fila_texto)
+                        
+                        if numeros:
+                            # Filtrar números que parecen notas (entre 0 y 10)
+                            notas_validas = [float(n) for n in numeros if 0 <= float(n) <= 10]
+                            
+                            if notas_validas:
+                                # Tomar el último (suele ser la puntuación final)
+                                nota_final = notas_validas[-1]
+                                print(f"    Fila {fila_buscar}: Números encontrados {numeros}")
+                                print(f"    Nota seleccionada: {nota_final}")
+                                
+                                # Determinar estado
+                                if 'NO APTO' in fila_texto:
+                                    estado = 'NO APTO'
+                                elif 'APTO' in fila_texto:
+                                    estado = 'APTO'
+                                
+                                break
+                    
+                    # También buscar líneas con APTO y números
+                    elif 'APTO' in fila_texto and '(' in fila_texto:
+                        numeros = re.findall(r'\((\d+\.?\d*)\)', fila_texto)
+                        notas_validas = [float(n) for n in numeros if 0 <= float(n) <= 10]
+                        
+                        if notas_validas:
+                            nota_final = notas_validas[-1]
+                            print(f"    Fila {fila_buscar}: APTO con nota {nota_final}")
+                            
+                            if 'NO APTO' in fila_texto:
+                                estado = 'NO APTO'
+                            else:
+                                estado = 'APTO'
+                            break
 
-            if estado == 'APTO' and nota_final is not None:
-                nota_redondeada = round(nota_final)
-                calificacion = f"S-{nota_redondeada}"
-            elif estado == 'NO APTO':
+            # Generar calificación final
+            if estado == 'NO APTO':
                 calificacion = "NS"
+                print(f"  RESULTADO: {calificacion} (NO APTO)")
+            elif nota_final is not None:
+                # Tomar SOLO la parte entera (sin redondear)
+                # 8.99 -> 8, 9.1 -> 9, 9.9 -> 9
+                nota_entera = int(nota_final)
+                calificacion = f"S-{nota_entera}"
+                print(f"  RESULTADO: {calificacion} (nota: {nota_final} -> {nota_entera})")
             else:
                 calificacion = "S-0"
+                print(f"  ERROR: No se pudo extraer calificación, asignando S-0")
             
             calificaciones[dni] = calificacion
-            print(f" {alumno['nombre']}: {calificacion}")
         
         return calificaciones
     
@@ -210,7 +328,7 @@ class CertificacionesOcupadosProcessor:
         Returns:
             Lista de diccionarios, uno por alumno con todos los datos
         """
-        print("\n🔗 Combinando datos...")
+        print("\nCombinando datos...")
         
         self.extraer_datos_pdf()
 
@@ -246,7 +364,7 @@ class CertificacionesOcupadosProcessor:
             
             datos_completos.append(datos_alumno)
         
-        print(f"\n Datos completos para {len(datos_completos)} alumnos")
+        print(f"\nDatos completos para {len(datos_completos)} alumnos")
         
         return datos_completos
 

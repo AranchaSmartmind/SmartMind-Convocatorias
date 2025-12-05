@@ -1,6 +1,7 @@
 """
 Interfaz de Evaluación - Desempleados
 CON PLANTILLA INTEGRADA POR DEFECTO + TRANSVERSALES
+LAYOUT MEJORADO: 2 columnas arriba, 1 abajo
 """
 import streamlit as st
 import pandas as pd
@@ -8,6 +9,8 @@ from io import BytesIO
 import zipfile
 import os
 import sys
+
+from sections.evaluacion.word_generator_grupal import WordGeneratorMultipaginaDuplicaTodo
 
 from sections.evaluacion.word_generator_grupal import WordGeneratorMultipaginaDuplicaTodo
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -54,14 +57,25 @@ def detectar_tipo_archivo(doc_bytes: bytes, curso_codigo: str, tipo: str = "Grup
 
 
 try:
-    from excel_processor import ExcelProcessorReal
-    from word_generator import WordGeneratorSEPE
-    from cronograma_processor import CronogramaProcessor
-    from word_generator_grupal import WordGeneratorActaGrupal
-    from transversales_processor import TransversalesProcessor
-    from word_generator_transversal import WordGeneratorTransversal
+    from .excel_processor import ExcelProcessorReal
+    print("excel_processor importado")
+    from .word_generator import WordGeneratorSEPE
+    print("word_generator importado")
+    from .word_generator_helper import generar_zip_todos_alumnos
+    print("word_generator_helper importado")
+    from .cronograma_processor import CronogramaProcessor
+    print("cronograma_processor importado")
+    from .word_generator_grupal import WordGeneratorActaGrupal
+    print("word_generator_grupal importado")
+    from .transversales_processor import TransversalesProcessor
+    print("transversales_processor importado")
+    from .word_generator_transversal import WordGeneratorTransversal
+    print("word_generator_transversal importado")
 except Exception as e:
     st.error(f"Error importando módulos: {e}")
+    import traceback
+    st.error(traceback.format_exc())
+    raise
 
 PLANTILLA_POR_DEFECTO = os.path.join(
     os.path.dirname(os.path.abspath(__file__)), 
@@ -82,7 +96,7 @@ def cargar_plantilla_por_defecto():
                 with open(ubicacion, 'rb') as f:
                     contenido = f.read()
                     if len(contenido) > 1000:
-                        print(f"✓ Plantilla cargada desde: {ubicacion}")
+                        print(f"Plantilla cargada desde: {ubicacion}")
                         return contenido
         
         print("No se encontró plantilla en ninguna ubicación")
@@ -110,7 +124,7 @@ def cargar_plantilla_grupal_por_defecto():
                 with open(ubicacion, 'rb') as f:
                     contenido = f.read()
                     if len(contenido) > 1000:
-                        print(f"✓ Plantilla grupal cargada desde: {ubicacion}")
+                        print(f"Plantilla grupal cargada desde: {ubicacion}")
                         return contenido
         
         print("No se encontró plantilla grupal")
@@ -139,7 +153,7 @@ def cargar_plantilla_transversal_por_defecto():
                 with open(ubicacion, 'rb') as f:
                     contenido = f.read()
                     if len(contenido) > 1000:
-                        print(f"✓ Plantilla transversal cargada desde: {ubicacion}")
+                        print(f"Plantilla transversal cargada desde: {ubicacion}")
                         return contenido
         
         print("No se encontró plantilla transversal")
@@ -196,9 +210,9 @@ def render_tab_desempleados():
 
 
 def render_individual():
-    """Render para actas individuales"""
+    """Render para actas individuales - LAYOUT 2-1"""
     
-    st.markdown("### Acta Individual")
+    st.markdown("###  Acta Individual")
     st.markdown("Genera informes individualizados para cada alumno")
     st.markdown("### Archivos")
     
@@ -208,6 +222,7 @@ def render_individual():
         st.markdown("**Cronograma**")
         cronograma_file = st.file_uploader(
             "Excel cronograma*",
+            key="desempleados_individual_cronograma",
             key="desempleados_individual_cronograma",
             type=['xlsx', 'xls']
         )
@@ -220,6 +235,7 @@ def render_individual():
         st.markdown("**Asistencias**")
         asistencias_file = st.file_uploader(
             "Excel control asistencias*",
+            key="desempleados_individual_asistencias",
             key="desempleados_individual_asistencias",
             type=['xlsx', 'xls']
         )
@@ -268,7 +284,7 @@ def render_individual():
     st.markdown("---")
     
     try:
-        with st.spinner('Procesando archivos...'):
+        with st.spinner(' Procesando archivos...'):
             processor = ExcelProcessorReal()
             datos = processor.cargar_asistencias(asistencias_file.read())
         
@@ -298,7 +314,7 @@ def render_individual():
             st.dataframe(df, use_container_width=True, hide_index=True)
         
         st.markdown("---")
-        st.markdown("### Generar Actas")
+        st.markdown("###  Generar Actas")
         
         if st.button("Generar TODAS las Actas (Word)", type="primary", use_container_width=True, key="desempleados_individual_generar_todas"):
             try:
@@ -359,7 +375,7 @@ def render_individual():
         
         if 'zip_actas_desempleados_individual' in st.session_state:
             st.markdown("---")
-            st.markdown("### Descargar")
+            st.markdown("###  Descargar")
             
             st.download_button(
                 label="Descargar ZIP con todas las actas",
@@ -372,7 +388,7 @@ def render_individual():
             )
         
         st.markdown("---")
-        st.markdown("### Vista Individual")
+        st.markdown("###  Vista Individual")
         
         alumno_seleccionado = st.selectbox(
             "Selecciona un alumno",
@@ -403,11 +419,20 @@ def render_individual():
                     gen = WordGeneratorSEPE(plantilla_bytes, es_xml=False)
                     doc = gen.generar_informe_individual(datos_ind)
                     
+                    if doc[:2] == b'PK':
+                        extension = '.zip'
+                        mime = 'application/zip'
+                    else:
+                        extension = '.docx'
+                        mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                    
                     st.download_button(
                         label="Descargar informe individual",
                         data=doc,
-                        file_name=f"{alumno['nombre'].replace(' ', '_')}.docx",
-                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        file_name=f"{alumno['nombre'].replace(' ', '_')}{extension}",
+                        mime=mime,
+                        file_name=f"{alumno['nombre'].replace(' ', '_')}{extension}",
+                        mime=mime,
                         use_container_width=True,
                         key="desempleados_individual_download_one"
                     )
@@ -424,7 +449,7 @@ def render_individual():
 
 
 def render_grupal():
-    """Render para acta grupal"""
+    """Render para acta grupal - LAYOUT 2-1"""
     
     st.markdown("### Acta Grupal")
     st.markdown("Genera el acta de evaluación final con todos los alumnos del grupo")
@@ -618,13 +643,12 @@ def render_grupal():
 
 
 def render_transversales():
-    """Render para actas transversales (FCOO03)"""
+    """Render para actas transversales (FCOO03) - LAYOUT 2-1"""
     
     st.markdown("### Actas Transversales (FCOO03)")
     st.markdown("Genera actas de evaluación final para competencias transversales")
     st.markdown("### Archivos")
     
-    # Fila superior: 2 columnas
     col1, col2 = st.columns(2)
     
     with col1:
@@ -693,7 +717,7 @@ def render_transversales():
     
     try:
         with st.spinner('Procesando archivos...'):
-            from transversales_processor import TransversalesProcessor
+            from .transversales_processor import TransversalesProcessor
             
             processor = TransversalesProcessor()
             cronograma_file.seek(0)
@@ -770,7 +794,7 @@ def render_transversales():
                         return
                 
                 with st.spinner('Generando acta transversal...'):
-                    from word_generator_transversal import WordGeneratorTransversal
+                    from .word_generator_transversal import WordGeneratorTransversal
                     
                     gen = WordGeneratorTransversal(plantilla_bytes)
                     doc = gen.generar_acta(datos)
