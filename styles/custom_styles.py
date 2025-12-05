@@ -225,13 +225,9 @@ label {
     font-weight: 500 !important;
 }
 
-<<<<<<< HEAD
-/* FILE UPLOADER STYLES - COMPACTOS */
-=======
 /* ========================================
-   FILE UPLOADER
+   FILE UPLOADER - COMPACTOS
    ======================================== */
->>>>>>> feature/memorias
 [data-testid="stFileUploader"] > label {
     color: var(--text-bright) !important;
     font-weight: 600 !important;
@@ -290,18 +286,15 @@ label {
     color: #0b0e14 !important;
 }
 
-<<<<<<< HEAD
 /* Iconos más pequeños */
 [data-testid="stFileUploader"] svg {
     width: 30px !important;
     height: 30px !important;
 }
 
-=======
 /* ========================================
    TABS
    ======================================== */
->>>>>>> feature/memorias
 button[data-baseweb="tab"] {
     color: rgba(255, 255, 255, 0.6) !important;
     font-weight: 500 !important;
@@ -522,8 +515,4 @@ def get_robot_assistant(image_path='assets/robot_asistente.png'):
 <div class="robot-assistant">
     <img src="data:image/png;base64,{image_base64}" alt="Robot Asistente">
 </div>
-<<<<<<< HEAD
 """
-=======
-"""
->>>>>>> feature/memorias
