@@ -92,3 +92,5 @@ elif seccion_actual == "Evaluación":
     render_evaluacion()
 elif seccion_actual == "Cierre Mes":
     render_cierre_mes()
+elif seccion_actual == "Memorias":
+    render_memorias()

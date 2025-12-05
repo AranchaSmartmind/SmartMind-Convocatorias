@@ -2,6 +2,7 @@
 Interfaz de Evaluación - Ocupados
 Genera 3 tipos de actas: Individual, Grupal y Certificados
 LAYOUT MEJORADO: 2 columnas arriba, 1 abajo
+LAYOUT MEJORADO: 2 columnas arriba, 1 abajo
 """
 import streamlit as st
 import pandas as pd
@@ -57,19 +58,27 @@ def detectar_tipo_archivo(doc_bytes: bytes, curso_codigo: str, tipo: str = "Grup
 try:
     from .excel_processor import ExcelProcessorReal
     print("excel_processor importado")
+    print("excel_processor importado")
     from .word_generator import WordGeneratorSEPE
+    print("word_generator importado")
     print("word_generator importado")
     from .word_generator_helper import generar_zip_todos_alumnos
     print("word_generator_helper importado")
+    print("word_generator_helper importado")
     from .cronograma_processor import CronogramaProcessor
+    print("cronograma_processor importado")
     print("cronograma_processor importado")
     from .word_generator_grupal import WordGeneratorActaGrupal
     print("word_generator_grupal importado")
+    print("word_generator_grupal importado")
     from .transversales_processor import TransversalesProcessor
+    print("transversales_processor importado")
     print("transversales_processor importado")
     from .word_generator_transversal import WordGeneratorTransversal
     print("word_generator_transversal importado")
+    print("word_generator_transversal importado")
 except Exception as e:
+    st.error(f"Error importando módulos: {e}")
     st.error(f"Error importando módulos: {e}")
     import traceback
     st.error(traceback.format_exc())
@@ -80,6 +89,7 @@ try:
     from sections.evaluacion.ocupados_certificaciones_generator import generar_certificado_ocupado
     CERTIFICACIONES_DISPONIBLE = True
 except ImportError as e:
+    st.warning(f"Módulo de certificaciones no disponible: {e}")
     st.warning(f"Módulo de certificaciones no disponible: {e}")
     CERTIFICACIONES_DISPONIBLE = False
 except Exception as e:
@@ -113,12 +123,15 @@ def cargar_plantilla_por_defecto():
                     contenido = f.read()
                     if len(contenido) > 1000:
                         print(f"Plantilla cargada desde: {ubicacion}")
+                        print(f"Plantilla cargada desde: {ubicacion}")
                         return contenido
         
+        print("No se encontró plantilla en ninguna ubicación")
         print("No se encontró plantilla en ninguna ubicación")
         return None
         
     except Exception as e:
+        print(f"Error cargando plantilla: {e}")
         print(f"Error cargando plantilla: {e}")
         return None
     
@@ -142,12 +155,15 @@ def cargar_plantilla_grupal_por_defecto():
                     contenido = f.read()
                     if len(contenido) > 1000:
                         print(f"Plantilla grupal cargada desde: {ubicacion}")
+                        print(f"Plantilla grupal cargada desde: {ubicacion}")
                         return contenido
         
+        print("No se encontró plantilla grupal")
         print("No se encontró plantilla grupal")
         return None
         
     except Exception as e:
+        print(f"Error cargando plantilla grupal: {e}")
         print(f"Error cargando plantilla grupal: {e}")
         return None
 
@@ -166,12 +182,15 @@ def cargar_plantilla_certificacion_por_defecto():
                     contenido = f.read()
                     if len(contenido) > 1000:
                         print(f"Plantilla certificación cargada desde: {ubicacion}")
+                        print(f"Plantilla certificación cargada desde: {ubicacion}")
                         return contenido
         
+        print("No se encontró plantilla de certificación")
         print("No se encontró plantilla de certificación")
         return None
         
     except Exception as e:
+        print(f"Error cargando plantilla certificación: {e}")
         print(f"Error cargando plantilla certificación: {e}")
         return None
 
@@ -179,6 +198,7 @@ def cargar_plantilla_certificacion_por_defecto():
 def render_tab_ocupados():
     """Render tab para ocupados con selector de tipo de acta"""
     
+    st.markdown("## Generador de Actas - Ocupados")
     st.markdown("## Generador de Actas - Ocupados")
     st.markdown("### Tipo de Acta")
     st.markdown("Selecciona el tipo de acta a generar:")
@@ -190,6 +210,7 @@ def render_tab_ocupados():
     
     with col1:
         if st.button("Acta Individual", 
+        if st.button("Acta Individual", 
                      key="btn_individual_ocupados",
                      use_container_width=True):
             st.session_state.ocupados_tipo_acta = "individual"
@@ -197,12 +218,14 @@ def render_tab_ocupados():
     
     with col2:
         if st.button("Acta Grupal", 
+        if st.button("Acta Grupal", 
                      key="btn_grupal_ocupados",
                      use_container_width=True):
             st.session_state.ocupados_tipo_acta = "grupal"
             st.rerun()
     
     with col3:
+        if st.button("Certificados", 
         if st.button("Certificados", 
                      key="btn_certificados_ocupados",
                      use_container_width=True):
@@ -223,9 +246,12 @@ def render_tab_ocupados():
 
 def render_individual():
     """Render para actas individuales - LAYOUT 2-1"""
+    """Render para actas individuales - LAYOUT 2-1"""
     
     st.markdown("### Acta Individual")
+    st.markdown("### Acta Individual")
     st.markdown("Genera informes individualizados para cada alumno")
+    st.markdown("### Archivos")
     st.markdown("### Archivos")
     
     # Fila superior: 2 columnas
@@ -240,7 +266,9 @@ def render_individual():
         )
         if cronograma_file:
             st.success("Cargado")
+            st.success("Cargado")
         else:
+            st.warning("Requerido")
             st.warning("Requerido")
     
     with col2:
@@ -252,7 +280,9 @@ def render_individual():
         )
         if asistencias_file:
             st.success("Cargado")
+            st.success("Cargado")
         else:
+            st.warning("Requerido")
             st.warning("Requerido")
     
     # Fila inferior: Plantilla
@@ -268,6 +298,7 @@ def render_individual():
     else:
         st.info("Por defecto")
     
+    with st.expander("Información", expanded=False):
     with st.expander("Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
@@ -291,11 +322,13 @@ def render_individual():
     
     if not cronograma_file or not asistencias_file:
         st.info("Sube al menos el cronograma y asistencias para continuar")
+        st.info("Sube al menos el cronograma y asistencias para continuar")
         return
     
     st.markdown("---")
     
     try:
+        with st.spinner('Procesando archivos...'):
         with st.spinner('Procesando archivos...'):
             processor = ExcelProcessorReal()
             datos = processor.cargar_asistencias(asistencias_file.read())
@@ -327,6 +360,7 @@ def render_individual():
         
         st.markdown("---")
         st.markdown("### Generar Actas")
+        st.markdown("### Generar Actas")
     
         if st.button("Generar TODAS las Actas (Word)", type="primary", use_container_width=True, key="ocupados_individual_generar_todas"):
             try:
@@ -337,11 +371,15 @@ def render_individual():
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
                     st.info("Usando plantilla personalizada")
+                    st.info("Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_por_defecto()
                     if plantilla_bytes:
                         st.info("Usando plantilla oficial SEPE predeterminada")
+                        st.info("Usando plantilla oficial SEPE predeterminada")
                     else:
+                        st.error("No se pudo cargar la plantilla predeterminada")
+                        st.warning("Sube una plantilla manualmente")
                         st.error("No se pudo cargar la plantilla predeterminada")
                         st.warning("Sube una plantilla manualmente")
                         return
@@ -380,16 +418,20 @@ def render_individual():
                 
                 st.balloons()
                 st.success(f"{total} actas generadas correctamente")
+                st.success(f"{total} actas generadas correctamente")
                 
             except Exception as e:
+                st.error(f"Error: {str(e)}")
                 st.error(f"Error: {str(e)}")
                 st.exception(e)
         
         if 'zip_actas_ocupados_individual' in st.session_state:
             st.markdown("---")
             st.markdown("### Descargar")
+            st.markdown("### Descargar")
             
             st.download_button(
+                label="Descargar ZIP con todas las actas",
                 label="Descargar ZIP con todas las actas",
                 data=st.session_state['zip_actas_ocupados_individual'],
                 file_name=st.session_state['nombre_zip_ocupados_individual'],
@@ -401,6 +443,7 @@ def render_individual():
         
         st.markdown("---")
         st.markdown("### Vista Individual")
+        st.markdown("### Vista Individual")
         
         alumno_seleccionado = st.selectbox(
             "Selecciona un alumno",
@@ -409,6 +452,7 @@ def render_individual():
             key="ocupados_individual_selector"
         )
         
+        if st.button("Generar vista previa", use_container_width=True, key="ocupados_individual_preview"):
         if st.button("Generar vista previa", use_container_width=True, key="ocupados_individual_preview"):
             try:
                 alumno = datos['alumnos'][alumno_seleccionado]
@@ -448,21 +492,27 @@ def render_individual():
                     )
                 else:
                     st.error("No hay plantilla disponible")
+                    st.error("No hay plantilla disponible")
                     
             except Exception as e:
+                st.error(f"Error: {str(e)}")
                 st.error(f"Error: {str(e)}")
                 st.exception(e)
     
     except Exception as e:
+        st.error(f"Error procesando archivos: {str(e)}")
         st.error(f"Error procesando archivos: {str(e)}")
         st.exception(e)
 
 
 def render_grupal():
     """Render para acta grupal - LAYOUT 2-1"""
+    """Render para acta grupal - LAYOUT 2-1"""
     
     st.markdown("### Acta Grupal")
+    st.markdown("### Acta Grupal")
     st.markdown("Genera el acta de evaluación final con todos los alumnos del grupo")
+    st.markdown("### Archivos")
     st.markdown("### Archivos")
     
     # Fila superior: 2 columnas
@@ -477,7 +527,9 @@ def render_grupal():
         )
         if cronograma_file:
             st.success("Cargado")
+            st.success("Cargado")
         else:
+            st.warning("Requerido")
             st.warning("Requerido")
     
     with col2:
@@ -489,7 +541,9 @@ def render_grupal():
         )
         if asistencias_file:
             st.success("Cargado")
+            st.success("Cargado")
         else:
+            st.warning("Requerido")
             st.warning("Requerido")
     
     # Fila inferior: Plantilla
@@ -505,6 +559,7 @@ def render_grupal():
     else:
         st.info("Por defecto")
     
+    with st.expander("Información", expanded=False):
     with st.expander("Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
@@ -528,11 +583,13 @@ def render_grupal():
     
     if not cronograma_file or not asistencias_file:
         st.info("Sube el cronograma y asistencias para continuar")
+        st.info("Sube el cronograma y asistencias para continuar")
         return
     
     st.markdown("---")
     
     try:
+        with st.spinner('Procesando archivos...'):
         with st.spinner('Procesando archivos...'):
             processor = ExcelProcessorReal()
             datos = processor.cargar_asistencias(asistencias_file.read())
@@ -590,7 +647,9 @@ def render_grupal():
         
         st.markdown("---")
         st.markdown("### Generar Acta Grupal")
+        st.markdown("### Generar Acta Grupal")
         
+        if st.button("Generar Acta Grupal", 
         if st.button("Generar Acta Grupal", 
                     type="primary", 
                     use_container_width=True,
@@ -613,15 +672,20 @@ def render_grupal():
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
                     st.info("Usando plantilla personalizada")
+                    st.info("Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_grupal_por_defecto()
                     if plantilla_bytes:
                         st.info("Usando plantilla oficial SEPE predeterminada")
+                        st.info("Usando plantilla oficial SEPE predeterminada")
                     else:
+                        st.error("No se encontró la plantilla predeterminada")
+                        st.warning("Sube una plantilla manualmente")
                         st.error("No se encontró la plantilla predeterminada")
                         st.warning("Sube una plantilla manualmente")
                         return
                 
+                with st.spinner('Generando acta grupal...'):
                 with st.spinner('Generando acta grupal...'):
                     gen = WordGeneratorMultipaginaDuplicaTodo(plantilla_bytes)
                     doc = gen.generar_acta_grupal(datos_acta)
@@ -634,16 +698,20 @@ def render_grupal():
                 
                 st.balloons()
                 st.success("¡Acta grupal generada correctamente!")
+                st.success("¡Acta grupal generada correctamente!")
                 
             except Exception as e:
+                st.error(f"Error generando acta: {str(e)}")
                 st.error(f"Error generando acta: {str(e)}")
                 st.exception(e)
         
         if 'acta_grupal_ocupados' in st.session_state:
             st.markdown("---")
             st.markdown("### Descargar")
+            st.markdown("### Descargar")
             
             st.download_button(
+                label="Descargar Acta Grupal",
                 label="Descargar Acta Grupal",
                 data=st.session_state['acta_grupal_ocupados'],
                 file_name=st.session_state['nombre_acta_grupal_ocupados'],
@@ -655,16 +723,20 @@ def render_grupal():
     
     except Exception as e:
         st.error(f"Error procesando archivos: {str(e)}")
+        st.error(f"Error procesando archivos: {str(e)}")
         st.exception(e)
 
 
 def render_certificados():
     """Render para certificados - LAYOUT 2-1"""
+    """Render para certificados - LAYOUT 2-1"""
     
+    st.markdown("### Certificados de Ocupados")
     st.markdown("### Certificados de Ocupados")
     st.markdown("Genera certificados individuales automáticamente desde PDF y Excel")
     
     if not CERTIFICACIONES_DISPONIBLE:
+        st.error("El módulo de certificaciones no está disponible")
         st.error("El módulo de certificaciones no está disponible")
         st.info("""
         **Para habilitar esta funcionalidad:**
@@ -678,6 +750,7 @@ def render_certificados():
         """)
         return
     
+    st.markdown("### Archivos Necesarios")
     st.markdown("### Archivos Necesarios")
     
     # Fila superior: 2 columnas
@@ -693,7 +766,9 @@ def render_certificados():
         )
         if pdf_file:
             st.success("Cargado")
+            st.success("Cargado")
         else:
+            st.warning("Requerido")
             st.warning("Requerido")
     
     with col2:
@@ -706,7 +781,9 @@ def render_certificados():
         )
         if excel_file:
             st.success("Cargado")
+            st.success("Cargado")
         else:
+            st.warning("Requerido")
             st.warning("Requerido")
     
     # Fila inferior: Plantilla
@@ -722,6 +799,7 @@ def render_certificados():
     else:
         st.info("Por defecto")
     
+    with st.expander("Información", expanded=False):
     with st.expander("Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
@@ -756,6 +834,7 @@ def render_certificados():
     
     if not pdf_file or not excel_file:
         st.info("Sube el PDF y Excel para continuar")
+        st.info("Sube el PDF y Excel para continuar")
         return
     
     st.markdown("---")
@@ -771,6 +850,7 @@ def render_certificados():
             tmp_excel.write(excel_file.read())
             excel_path = tmp_excel.name
         
+        with st.spinner('Extrayendo datos del PDF y Excel...'):
         with st.spinner('Extrayendo datos del PDF y Excel...'):
             datos_completos = procesar_certificaciones(pdf_path, excel_path)
         
@@ -828,7 +908,9 @@ def render_certificados():
         
         st.markdown("---")
         st.markdown("### Generar Certificados")
+        st.markdown("### Generar Certificados")
         
+        if st.button("Generar TODOS los Certificados", 
         if st.button("Generar TODOS los Certificados", 
                     type="primary", 
                     use_container_width=True,
@@ -840,11 +922,15 @@ def render_certificados():
                     plantilla_cert_file.seek(0)
                     plantilla_bytes = plantilla_cert_file.read()
                     st.info("Usando plantilla personalizada")
+                    st.info("Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_certificacion_por_defecto()
                     if plantilla_bytes:
                         st.info("Usando plantilla oficial predeterminada")
+                        st.info("Usando plantilla oficial predeterminada")
                     else:
+                        st.error("No se encontró la plantilla de certificación")
+                        st.warning("Sube una plantilla manualmente")
                         st.error("No se encontró la plantilla de certificación")
                         st.warning("Sube una plantilla manualmente")
                         return
@@ -854,6 +940,7 @@ def render_certificados():
                     plantilla_path = tmp_plantilla.name
                 
                 with st.spinner(f'Generando {total} certificados...'):
+                with st.spinner(f'Generando {total} certificados...'):
                     zip_buffer = BytesIO()
                     
                     with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zipf:
@@ -862,6 +949,7 @@ def render_certificados():
                         
                         for idx, datos_alumno in enumerate(datos_completos):
                             progress.progress((idx + 1) / total)
+                            status.text(f"{idx + 1}/{total}: {datos_alumno['nombre_alumno'][:40]}")
                             status.text(f"{idx + 1}/{total}: {datos_alumno['nombre_alumno'][:40]}")
                             
                             certificado_bytes, nombre_archivo = generar_certificado_ocupado(
@@ -873,6 +961,7 @@ def render_certificados():
                         
                         progress.progress(1.0)
                         status.text(f"{total} certificados generados")
+                        status.text(f"{total} certificados generados")
                     
                     zip_buffer.seek(0)
                     st.session_state['zip_certificados_ocupados'] = zip_buffer.getvalue()
@@ -882,8 +971,10 @@ def render_certificados():
                 
                 st.balloons()
                 st.success(f"{total} certificados generados correctamente")
+                st.success(f"{total} certificados generados correctamente")
                 
             except Exception as e:
+                st.error(f"Error generando certificados: {str(e)}")
                 st.error(f"Error generando certificados: {str(e)}")
                 st.exception(e)
         
@@ -891,8 +982,10 @@ def render_certificados():
         if 'zip_certificados_ocupados' in st.session_state:
             st.markdown("---")
             st.markdown("### Descargar")
+            st.markdown("### Descargar")
             
             st.download_button(
+                label="Descargar ZIP con todos los certificados",
                 label="Descargar ZIP con todos los certificados",
                 data=st.session_state['zip_certificados_ocupados'],
                 file_name=st.session_state['nombre_zip_certificados'],
@@ -903,6 +996,7 @@ def render_certificados():
             )
     
     except Exception as e:
+        st.error(f"Error procesando archivos: {str(e)}")
         st.error(f"Error procesando archivos: {str(e)}")
         import traceback
         st.code(traceback.format_exc())

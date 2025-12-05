@@ -17,20 +17,63 @@ def get_custom_styles():
     font-family: 'Poppins', sans-serif;
 }
 
-[data-testid="stSidebar"] { display: block !important; }
-header, footer, #MainMenu { visibility: hidden; }
+/* ========================================
+   SIDEBAR FIJO - SIEMPRE VISIBLE
+   ======================================== */
+section[data-testid="stSidebar"],
+[data-testid="stSidebar"] {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: relative !important;
+    left: 0 !important;
+    transform: translateX(0) !important;
+    width: 21rem !important;
+    min-width: 21rem !important;
+    background: var(--panel-dark) !important;
+    border-right: 3px solid var(--holo-blue) !important;
+    padding-top: 0 !important;
+    z-index: 999 !important;
+}
+
+/* OCULTAR BOTÓN DE COLAPSAR - SIDEBAR FIJO */
+[data-testid="collapsedControl"],
+button[kind="header"] {
+    display: none !important;
+    visibility: hidden !important;
+}
+
+/* ELIMINAR SOLO EL HEADER DEL SIDEBAR (no todo el contenido) */
+[data-testid="stSidebarHeader"] {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+/* Ocultar solo el logo de Streamlit */
+div[data-testid="stSidebar"] img[alt*="streamlit"] {
+    display: none !important;
+}
+
+/* Ocultar el contenedor morado del header */
+div.st-emotion-cache-6f82ta4 {
+    display: none !important;
+}
+
+header, footer, #MainMenu { 
+    visibility: hidden !important;
+}
 
 .main .block-container {
     padding-top: 1rem !important;
     max-width: 100% !important;
 }
 
-[data-testid="stSidebar"] {
-    background: var(--panel-dark) !important;
-    border-right: 3px solid var(--holo-blue) !important;
-    padding-top: 0 !important;
-}
-
+/* ========================================
+   ESTILOS INTERNOS DEL SIDEBAR
+   ======================================== */
 [data-testid="stSidebar"] > div:first-child {
     background: var(--panel-dark) !important;
     padding-top: 0 !important;
@@ -113,6 +156,9 @@ header, footer, #MainMenu { visibility: hidden; }
     background: rgba(0,0,0,0.2);
 }
 
+/* ========================================
+   BOTONES PRINCIPALES
+   ======================================== */
 .stButton > button,
 .main .stButton > button,
 button[kind="primary"],
@@ -156,6 +202,9 @@ button[data-baseweb="button"]:active {
     box-shadow: 0 4px 20px rgba(79,195,247,0.4) !important;
 }
 
+/* ========================================
+   TEXTOS Y TIPOGRAFÍA
+   ======================================== */
 p, span, div, label {
     color: var(--text-bright) !important;
 }
@@ -176,7 +225,13 @@ label {
     font-weight: 500 !important;
 }
 
+<<<<<<< HEAD
 /* FILE UPLOADER STYLES - COMPACTOS */
+=======
+/* ========================================
+   FILE UPLOADER
+   ======================================== */
+>>>>>>> feature/memorias
 [data-testid="stFileUploader"] > label {
     color: var(--text-bright) !important;
     font-weight: 600 !important;
@@ -235,12 +290,18 @@ label {
     color: #0b0e14 !important;
 }
 
+<<<<<<< HEAD
 /* Iconos más pequeños */
 [data-testid="stFileUploader"] svg {
     width: 30px !important;
     height: 30px !important;
 }
 
+=======
+/* ========================================
+   TABS
+   ======================================== */
+>>>>>>> feature/memorias
 button[data-baseweb="tab"] {
     color: rgba(255, 255, 255, 0.6) !important;
     font-weight: 500 !important;
@@ -297,14 +358,14 @@ def get_interpros_logo(image_path='assets/logo.png'):
             try:
                 with open(ubicacion, 'rb') as f:
                     image_base64 = base64.b64encode(f.read()).decode()
-                print(f" Logo cargado desde: {ubicacion}")
+                print(f"✅ Logo cargado desde: {ubicacion}")
                 break
             except Exception as e:
-                print(f"Error cargando {ubicacion}: {e}")
+                print(f"❌ Error cargando {ubicacion}: {e}")
                 continue
     
     if not image_base64:
-        print(" No se encontró el logo en ninguna ubicación")
+        print("⚠️ No se encontró el logo en ninguna ubicación")
         return ""
     
     return f"""
@@ -336,7 +397,7 @@ def get_interpros_logo(image_path='assets/logo.png'):
 
 
 def get_robot_assistant(image_path='assets/robot_asistente.png'):
-    """Genera el HTML del robot asistente que se mueve con el sidebar"""
+    """Genera el HTML del robot asistente - SIEMPRE en esquina inferior izquierda"""
     import base64
     import os
     
@@ -355,23 +416,14 @@ def get_robot_assistant(image_path='assets/robot_asistente.png'):
 <style>
 .robot-assistant {{
     position: fixed !important;
-    bottom: 20px !important;
+    bottom: 60px !important;
     left: 80px !important;
-    top: auto !important;
-    right: auto !important;
     width: 150px !important;
     height: 150px !important;
     z-index: 999999 !important;
     cursor: pointer !important;
     animation: float-robot 4s ease-in-out infinite !important;
-    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}}
-
-body:has([data-testid="collapsedControl"]) .robot-assistant {{
-    top: 80px !important;
-    bottom: auto !important;
-    left: auto !important;
-    right: 60px !important;
+    transition: all 0.4s ease !important;
 }}
 
 .robot-assistant img {{
@@ -445,7 +497,6 @@ body:has([data-testid="collapsedControl"]) .robot-assistant {{
     position: absolute;
     top: 50%;
     left: 165px;
-    right: auto;
     background: linear-gradient(135deg, rgba(79, 195, 247, 0.95), rgba(79, 195, 247, 0.85));
     color: white;
     padding: 12px 20px;
@@ -462,11 +513,6 @@ body:has([data-testid="collapsedControl"]) .robot-assistant {{
     transition: all 0.3s ease;
 }}
 
-body:has([data-testid="collapsedControl"]) .robot-assistant::after {{
-    left: auto !important;
-    right: 165px !important;
-}}
-
 .robot-assistant:hover::after {{
     transform: translateY(-50%) scale(1);
     opacity: 1;
@@ -476,4 +522,8 @@ body:has([data-testid="collapsedControl"]) .robot-assistant::after {{
 <div class="robot-assistant">
     <img src="data:image/png;base64,{image_base64}" alt="Robot Asistente">
 </div>
+<<<<<<< HEAD
 """
+=======
+"""
+>>>>>>> feature/memorias
