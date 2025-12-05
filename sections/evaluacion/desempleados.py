@@ -223,7 +223,6 @@ def render_individual():
         cronograma_file = st.file_uploader(
             "Excel cronograma*",
             key="desempleados_individual_cronograma",
-            key="desempleados_individual_cronograma",
             type=['xlsx', 'xls']
         )
         if cronograma_file:
@@ -235,7 +234,6 @@ def render_individual():
         st.markdown("**Asistencias**")
         asistencias_file = st.file_uploader(
             "Excel control asistencias*",
-            key="desempleados_individual_asistencias",
             key="desempleados_individual_asistencias",
             type=['xlsx', 'xls']
         )
@@ -429,8 +427,6 @@ def render_individual():
                     st.download_button(
                         label="Descargar informe individual",
                         data=doc,
-                        file_name=f"{alumno['nombre'].replace(' ', '_')}{extension}",
-                        mime=mime,
                         file_name=f"{alumno['nombre'].replace(' ', '_')}{extension}",
                         mime=mime,
                         use_container_width=True,
