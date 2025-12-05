@@ -308,10 +308,11 @@ class CertificacionesOcupadosProcessor:
                 calificacion = "NS"
                 print(f"  RESULTADO: {calificacion} (NO APTO)")
             elif nota_final is not None:
-                # Redondear sin decimales
-                nota_redondeada = round(nota_final)
-                calificacion = f"S-{nota_redondeada}"
-                print(f"  RESULTADO: {calificacion} (nota: {nota_final} -> {nota_redondeada})")
+                # Tomar SOLO la parte entera (sin redondear)
+                # 8.99 -> 8, 9.1 -> 9, 9.9 -> 9
+                nota_entera = int(nota_final)
+                calificacion = f"S-{nota_entera}"
+                print(f"  RESULTADO: {calificacion} (nota: {nota_final} -> {nota_entera})")
             else:
                 calificacion = "S-0"
                 print(f"  ERROR: No se pudo extraer calificación, asignando S-0")
