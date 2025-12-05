@@ -216,7 +216,6 @@ def render_individual():
     st.markdown("Genera informes individualizados para cada alumno")
     st.markdown("### Archivos")
     
-    # LAYOUT 2-1: Dos columnas arriba
     col1, col2 = st.columns(2)
     
     with col1:
@@ -228,9 +227,9 @@ def render_individual():
             type=['xlsx', 'xls']
         )
         if cronograma_file:
-            st.success(" Cargado")
+            st.success("Cargado")
         else:
-            st.warning(" Requerido")
+            st.warning("Requerido")
     
     with col2:
         st.markdown("**Asistencias**")
@@ -241,9 +240,9 @@ def render_individual():
             type=['xlsx', 'xls']
         )
         if asistencias_file:
-            st.success(" Cargado")
+            st.success("Cargado")
         else:
-            st.warning(" Requerido")
+            st.warning("Requerido")
     
     st.markdown("**Plantilla (Opcional)**")
     plantilla_file = st.file_uploader(
@@ -257,7 +256,7 @@ def render_individual():
     else:
         st.info("Por defecto")
     
-    with st.expander(" Información", expanded=False):
+    with st.expander("Información", expanded=False):
         st.markdown("""
         **Archivos necesarios:**
         
@@ -279,7 +278,7 @@ def render_individual():
         """)
     
     if not cronograma_file or not asistencias_file:
-        st.info(" Sube al menos el cronograma y asistencias para continuar")
+        st.info("Sube al menos el cronograma y asistencias para continuar")
         return
     
     st.markdown("---")
@@ -317,7 +316,7 @@ def render_individual():
         st.markdown("---")
         st.markdown("###  Generar Actas")
         
-        if st.button("Generar TODAS las Actas (ZIP)", type="primary", use_container_width=True, key="desempleados_individual_generar_todas"):
+        if st.button("Generar TODAS las Actas (Word)", type="primary", use_container_width=True, key="desempleados_individual_generar_todas"):
             try:
                 alumnos = datos['alumnos']
                 total = len(alumnos)
@@ -325,39 +324,53 @@ def render_individual():
                 if plantilla_file:
                     plantilla_file.seek(0)
                     plantilla_bytes = plantilla_file.read()
-                    st.info(" Usando plantilla personalizada")
+                    st.info("Usando plantilla personalizada")
                 else:
                     plantilla_bytes = cargar_plantilla_por_defecto()
                     if plantilla_bytes:
-                        st.info(" Usando plantilla oficial SEPE predeterminada")
+                        st.info("Usando plantilla oficial SEPE predeterminada")
                     else:
-                        st.error(" No se pudo cargar la plantilla predeterminada")
-                        st.warning(" Sube una plantilla manualmente")
+                        st.error("No se pudo cargar la plantilla predeterminada")
+                        st.warning("Sube una plantilla manualmente")
                         return
                 
                 with st.spinner(f'Generando {total} actas...'):
-                    lista_datos = []
-                    for alumno in alumnos:
-                        datos_alumno = {
-                            'alumno': alumno,
-                            'curso': {
-                                'nombre': datos['curso_nombre'],
-                                'codigo': datos['curso_codigo']
+                    zip_buffer = BytesIO()
+                    
+                    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zf:
+                        progress = st.progress(0)
+                        status = st.empty()
+                        
+                        for idx, alumno in enumerate(alumnos):
+                            progress.progress((idx + 1) / total)
+                            status.text(f"{idx + 1}/{total}: {alumno['nombre'][:40]}")
+                            
+                            datos_alumno = {
+                                'alumno': alumno,
+                                'curso': {
+                                    'nombre': datos['curso_nombre'],
+                                    'codigo': datos['curso_codigo']
+                                }
                             }
-                        }
-                        lista_datos.append(datos_alumno)
+                            
+                            gen = WordGeneratorSEPE(plantilla_bytes, es_xml=False)
+                            doc = gen.generar_informe_individual(datos_alumno)
+                            
+                            nombre = alumno['nombre'].replace(' ', '_').replace(',', '')[:50]
+                            zf.writestr(f"{nombre}.docx", doc)
+                        
+                        progress.progress(1.0)
+                        status.text(f"{total} actas generadas")
                     
-                    gen = WordGeneratorSEPE(plantilla_bytes, es_xml=False)
-                    zip_bytes = generar_zip_todos_alumnos(gen, lista_datos)
-                    
-                    st.session_state['zip_actas_desempleados_individual'] = zip_bytes
+                    zip_buffer.seek(0)
+                    st.session_state['zip_actas_desempleados_individual'] = zip_buffer.getvalue()
                     st.session_state['nombre_zip_desempleados_individual'] = f"Actas_Individual_Desempleados_{datos['curso_codigo'].replace('/', '_')}.zip"
                 
                 st.balloons()
-                st.success(f" {total} actas generadas correctamente")
+                st.success(f"{total} actas generadas correctamente")
                 
             except Exception as e:
-                st.error(f" Error: {str(e)}")
+                st.error(f"Error: {str(e)}")
                 st.exception(e)
         
         if 'zip_actas_desempleados_individual' in st.session_state:
@@ -365,7 +378,7 @@ def render_individual():
             st.markdown("###  Descargar")
             
             st.download_button(
-                label=" Descargar ZIP con todas las actas",
+                label="Descargar ZIP con todas las actas",
                 data=st.session_state['zip_actas_desempleados_individual'],
                 file_name=st.session_state['nombre_zip_desempleados_individual'],
                 mime="application/zip",
@@ -384,7 +397,7 @@ def render_individual():
             key="desempleados_individual_selector"
         )
         
-        if st.button(" Generar vista previa", use_container_width=True, key="desempleados_individual_preview"):
+        if st.button("Generar vista previa", use_container_width=True, key="desempleados_individual_preview"):
             try:
                 alumno = datos['alumnos'][alumno_seleccionado]
                 
@@ -414,7 +427,7 @@ def render_individual():
                         mime = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
                     
                     st.download_button(
-                        label=f"Descargar informe individual ({extension})",
+                        label="Descargar informe individual",
                         data=doc,
                         file_name=f"{alumno['nombre'].replace(' ', '_')}{extension}",
                         mime=mime,
@@ -424,14 +437,14 @@ def render_individual():
                         key="desempleados_individual_download_one"
                     )
                 else:
-                    st.error(" No hay plantilla disponible")
+                    st.error("No hay plantilla disponible")
                     
             except Exception as e:
-                st.error(f" Error: {str(e)}")
+                st.error(f"Error: {str(e)}")
                 st.exception(e)
     
     except Exception as e:
-        st.error(f" Error procesando archivos: {str(e)}")
+        st.error(f"Error procesando archivos: {str(e)}")
         st.exception(e)
 
 
